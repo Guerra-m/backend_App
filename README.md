@@ -4,7 +4,7 @@ Integrantes:
 - Gomez Cristian
 - Guerra Martin
 ---------------------------------------
-comandos para ejecucion (puede variar segun version de python instalada):
+Comandos para ejecucion (puede variar segun version de python instalada):
 - python -m venv .venv
 - .venv\Scripts\activate
 - pip install -r requirements.txt
