@@ -48,17 +48,17 @@ class DireccionEntregaRepository(BaseRepository[DireccionEntrega]):
         self.session.flush()
         return direccion
 
-def marcar_como_principal(self, usuario_id: int, direccion_id: int) -> DireccionEntrega:
+    def marcar_como_principal(self, usuario_id: int, direccion_id: int) -> DireccionEntrega:
     # Desmarcar todas las principales actuales del usuario
-    todas = self.get_by_usuario(usuario_id)
-    for d in todas:
-        if d.es_principal:
-            d.es_principal = False
-            self.session.add(d)
+        todas = self.get_by_usuario(usuario_id)
+        for d in todas:
+            if d.es_principal:
+                d.es_principal = False
+                self.session.add(d)
 
-    # Marcar la nueva
-    direccion = self.get_by_id(direccion_id)
-    direccion.es_principal = True
-    self.session.add(direccion)
-    self.session.flush()
-    return direccion
+        # Marcar la nueva
+        direccion = self.get_by_id(direccion_id)
+        direccion.es_principal = True
+        self.session.add(direccion)
+        self.session.flush()
+        return direccion
