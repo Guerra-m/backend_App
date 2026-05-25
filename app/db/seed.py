@@ -69,6 +69,57 @@ USUARIOS = [
         "password": "Juan1234!",
         "roles": ["CLIENT"],
     },
+    {
+        "nombre": "Maria",
+        "apellido": "Stock",
+        "email": "stock@example.com",
+        "password": "Stock1234!",
+        "roles": ["STOCK"],
+    },
+    {
+        "nombre": "Pedro",
+        "apellido": "Pedidos",
+        "email": "pedidos@example.com",
+        "password": "Pedidos1234!",
+        "roles": ["PEDIDOS"],
+    },
+]
+CATEGORIAS = [
+    {
+        "nombre": "Hamburguesas",
+        "descripcion": "Las mejores hamburguesas artesanales",
+        "imagen": "https://images.unsplash.com/photo-1550547660-d9450f859349",
+    },
+    {
+        "nombre": "Pizzas",
+        "descripcion": "Pizzas clásicas e italianas",
+        "imagen": "https://images.unsplash.com/photo-1548365328-9f547fb0959b",
+    },
+    {
+        "nombre": "Sushi",
+        "descripcion": "Comida japonesa fresca",
+        "imagen": "https://images.unsplash.com/photo-1553621042-f6e147245754",
+    },
+    {
+        "nombre": "Tacos",
+        "descripcion": "Sabores mexicanos auténticos",
+        "imagen": "https://images.unsplash.com/photo-1552332386-f8dd00dc2f85",
+    },
+]
+
+PRODUCTOS = [
+    {
+        "nombre": "Hamburguesa Clásica",
+        "descripcion": "Carne, queso, lechuga y tomate",
+        "precio": 5000,
+        "imagen": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
+    },
+    {
+        "nombre": "Pizza Napolitana",
+        "descripcion": "Mozzarella y albahaca",
+        "precio": 7000,
+        "imagen": "https://images.unsplash.com/photo-1601924582970-9238bcb495d9",
+    },
 ]
 
 
@@ -111,32 +162,65 @@ def run() -> None:
 
         session.commit()
 
-        print("\nUsuarios:")
-        for data in USUARIOS:
+ # ───────── CATEGORÍAS ─────────
+        print("\nCategorías:")
+        for c in CATEGORIAS:
             existing = session.exec(
-                select(Usuario).where(Usuario.email == data["email"])
+                select(Categoria).where(Categoria.nombre == c["nombre"])
             ).first()
 
             if existing:
-                print(f"  [=] Ya existe: {data['email']}")
+                print(f"  [=] {c['nombre']}")
             else:
-                usuario = Usuario(
-                    nombre=data["nombre"],
-                    apellido=data["apellido"],
-                    email=data["email"],
-                    password_hash=hash_password(data["password"]),
+                session.add(Categoria(**c))
+                print(f"  [+] {c['nombre']}")
+        session.commit()
+
+        # ───────── USUARIOS ─────────
+        print("\nUsuarios:")
+        for u in USUARIOS:
+            existing = session.exec(
+                select(Usuario).where(Usuario.email == u["email"])
+            ).first()
+
+            if not existing:
+                user = Usuario(
+                    nombre=u["nombre"],
+                    apellido=u["apellido"],
+                    email=u["email"],
+                    password_hash=hash_password(u["password"]),
                 )
-                session.add(usuario)
+                session.add(user)
                 session.flush()
 
-                for rol_codigo in data["roles"]:
+                for role in u["roles"]:
                     session.add(UsuarioRol(
-                        usuario_id=usuario.id,
-                        rol_codigo=rol_codigo,
+                        usuario_id=user.id,
+                        rol_codigo=role,
                     ))
-                print(f"  [+] Creado: {data['email']} / {data['password']}  roles={data['roles']}")
+
+                print(f"  [+] {u['email']}")
+            else:
+                print(f"  [=] {u['email']}")
 
         session.commit()
+
+        # ───────── PRODUCTOS ─────────
+        print("\nProductos:")
+        for p in PRODUCTOS:
+            existing = session.exec(
+                select(Producto).where(Producto.nombre == p["nombre"])
+            ).first()
+
+            if not existing:
+                session.add(Producto(**p))
+                print(f"  [+] {p['nombre']}")
+            else:
+                print(f"  [=] {p['nombre']}")
+
+        session.commit()
+
+    print("\n✔ SEED COMPLETADO")
 
     print("\n--- Usuarios para pruebas ---")
     print("  admin@example.com / Admin1234!  → ADMIN")

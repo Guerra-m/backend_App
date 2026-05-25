@@ -10,3 +10,5 @@ Comandos para ejecucion (puede variar segun version de python instalada):
 - pip install -r requirements.txt
 - python -m fastapi dev main.py
 ---------------------------------------
+Ejecutar seed
+- python -m app.db.seed
