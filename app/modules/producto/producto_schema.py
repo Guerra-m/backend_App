@@ -1,13 +1,12 @@
 from typing import Optional, List
 from datetime import datetime
-from decimal import Decimal
 from pydantic import BaseModel, field_validator
 
 
 class ProductoCreate(BaseModel):
     nombre: str
     descripcion: Optional[str] = None
-    precio_base: Decimal
+    precio_base: float
     imagenes_url: Optional[str] = None
     stock_cantidad: int = 0
     disponible: bool = True
@@ -30,7 +29,7 @@ class ProductoCreate(BaseModel):
 class ProductoUpdate(BaseModel):
     nombre: Optional[str] = None
     descripcion: Optional[str] = None
-    precio_base: Optional[Decimal] = None
+    precio_base: Optional[float] = None
     imagenes_url: Optional[str] = None
     stock_cantidad: Optional[int] = None
     disponible: Optional[bool] = None
@@ -40,7 +39,7 @@ class ProductoRead(BaseModel):
     id: int
     nombre: str
     descripcion: Optional[str]
-    precio_base: Decimal
+    precio_base: float
     imagenes_url: Optional[str]
     stock_cantidad: int
     disponible: bool

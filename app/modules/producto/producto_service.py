@@ -28,6 +28,25 @@ class ProductoService:
                 ProductoRead.model_validate(p)
                 for p in uow.productos.get_all(offset=offset, limit=limit)
             ]
+        
+    def listar_filtrado(
+        self,
+        offset: int = 0,
+        limit: int = 20,
+        categoria_id: int | None = None,
+        disponible: bool | None = None,
+        texto: str | None = None,
+    ) -> list[ProductoRead]:
+        with self.uow as uow:
+            return [
+                ProductoRead.model_validate(p)
+                for p in uow.productos.get_all_filtrado(
+                    offset=offset, limit=limit,
+                    categoria_id=categoria_id,
+                    disponible=disponible,
+                    texto=texto,
+                )
+            ]
 
     def listar_disponibles(self, offset: int = 0, limit: int = 20) -> list[ProductoRead]:
         
@@ -42,6 +61,19 @@ class ProductoService:
         with self.uow as uow:
             try:
                 producto = uow.productos.update(producto_id, data)
+            except ValueError as e:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+            return ProductoRead.model_validate(producto)
+        
+    def actualizar_disponibilidad(
+        self, producto_id: int, disponible: bool, stock_cantidad: int | None = None
+    ) -> ProductoRead:
+        """PATCH /disponibilidad — exclusivo de ADMIN y STOCK."""
+        with self.uow as uow:
+            try:
+                producto = uow.productos.actualizar_disponibilidad(
+                    producto_id, disponible, stock_cantidad
+                )
             except ValueError as e:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
             return ProductoRead.model_validate(producto)

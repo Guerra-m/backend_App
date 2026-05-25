@@ -2,11 +2,13 @@ from datetime import datetime, timezone
 from sqlmodel import Session, select
 from app.modules.usuario.usuario_model import Usuario
 from app.modules.usuario.usuario_schema import UsuarioCreate, UsuarioUpdate
+from app.core.base_repository import BaseRepository
+from app.modules.usuario_rol.usuario_rol_model import UsuarioRol
 
 
-class UsuarioRepository:
+class UsuarioRepository(BaseRepository[Usuario]):
     def __init__(self, session: Session):
-        self.session = session
+        super().__init__(Usuario, session)
 
     def create(self, usuario: Usuario) -> Usuario:
         self.session.add(usuario)
@@ -27,13 +29,15 @@ class UsuarioRepository:
         )
         return self.session.exec(statement).first()
 
-    def get_all(self, offset: int = 0, limit: int = 20) -> list[Usuario]:
-        statement = (
-            select(Usuario)
-            .where(Usuario.deleted_at == None)
-            .offset(offset)
-            .limit(limit)
-        )
+    def get_all(self, offset: int = 0, limit: int = 20, rol: str | None = None) -> list[Usuario]:
+        statement = select(Usuario).where(Usuario.deleted_at == None)
+
+        if rol:
+            statement = statement.join(UsuarioRol, UsuarioRol.usuario_id == Usuario.id).where(
+                UsuarioRol.rol_codigo == rol
+            )
+
+        statement = statement.offset(offset).limit(limit)
         return list(self.session.exec(statement).all())
 
     def update(self, usuario: Usuario) -> Usuario:

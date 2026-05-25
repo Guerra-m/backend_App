@@ -5,11 +5,11 @@ from app.modules.direccion_entrega.direccion_entrega_schema import (
     DireccionEntregaCreate,
     DireccionEntregaUpdate,
 )
+from app.core.base_repository import BaseRepository
 
-
-class DireccionEntregaRepository:
+class DireccionEntregaRepository(BaseRepository[DireccionEntrega]):
     def __init__(self, session: Session):
-        self.session = session
+        super().__init__(DireccionEntrega, session)
 
     def create(self, usuario_id: int, data: DireccionEntregaCreate) -> DireccionEntrega:
         direccion = DireccionEntrega(
@@ -47,3 +47,18 @@ class DireccionEntregaRepository:
         self.session.add(direccion)
         self.session.flush()
         return direccion
+
+def marcar_como_principal(self, usuario_id: int, direccion_id: int) -> DireccionEntrega:
+    # Desmarcar todas las principales actuales del usuario
+    todas = self.get_by_usuario(usuario_id)
+    for d in todas:
+        if d.es_principal:
+            d.es_principal = False
+            self.session.add(d)
+
+    # Marcar la nueva
+    direccion = self.get_by_id(direccion_id)
+    direccion.es_principal = True
+    self.session.add(direccion)
+    self.session.flush()
+    return direccion

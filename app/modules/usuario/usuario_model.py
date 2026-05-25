@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from app.modules.usuario_rol.usuario_rol_model import UsuarioRol
     from app.modules.direccion_entrega.direccion_entrega_model import DireccionEntrega
     from app.modules.refresh_token.refresh_token_model import RefreshToken
+    from app.modules.pedido.pedido_model import Pedido
 
 
 class Usuario(SQLModel, table=True):
@@ -43,3 +44,5 @@ class Usuario(SQLModel, table=True):
     )
     direcciones: List["DireccionEntrega"] = Relationship(back_populates="usuario")
     refresh_tokens: List["RefreshToken"] = Relationship(back_populates="usuario")
+
+    pedidos: List["Pedido"] = Relationship(back_populates="usuario")

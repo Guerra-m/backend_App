@@ -21,6 +21,7 @@ from app.modules.usuario.usuario_schema import (
     UsuarioRead,
     UsuarioReadWithRoles,
     Token,
+    UsuarioUpdate,
 )
 from app.modules.usuario_rol.usuario_rol_model import UsuarioRol
 from app.modules.refresh_token.refresh_token_model import RefreshToken
@@ -159,10 +160,9 @@ class UsuarioService:
         with self.uow as uow:
             uow.refresh_tokens.revoke_all_by_usuario(usuario_id)
 
-    def listar_usuarios(self, offset: int = 0, limit: int = 20) -> list[UsuarioReadWithRoles]:
-        """Lista todos los usuarios con sus roles (admin only)."""
+    def listar_usuarios(self, offset: int = 0, limit: int = 20, rol: str | None = None) -> list[UsuarioReadWithRoles]:
         with self.uow as uow:
-            usuarios = uow.usuarios.get_all(offset=offset, limit=limit)
+            usuarios = uow.usuarios.get_all(offset=offset, limit=limit, rol=rol)
             result = []
             for u in usuarios:
                 roles = uow.usuario_roles.get_roles_by_usuario(u.id)
@@ -173,6 +173,31 @@ class UsuarioService:
                     )
                 )
             return result
+
+    def actualizar_usuario(self, usuario_id: int, data: UsuarioUpdate) -> UsuarioReadWithRoles:
+        with self.uow as uow:
+            usuario = uow.usuarios.get_by_id(usuario_id)
+            if not usuario:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+        
+            update_data = data.model_dump(exclude_unset=True)
+            for key, value in update_data.items():
+                setattr(usuario, key, value)
+        
+            usuario = uow.usuarios.update(usuario)
+            roles = uow.usuario_roles.get_roles_by_usuario(usuario.id)
+            return UsuarioReadWithRoles(
+                **UsuarioRead.model_validate(usuario).model_dump(),
+                roles=roles,
+            )
+
+    def eliminar_usuario(self, usuario_id: int) -> dict:
+        with self.uow as uow:
+            try:
+                uow.usuarios.soft_delete(usuario_id)
+            except ValueError as e:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+            return {"mensaje": f"Usuario {usuario_id} eliminado correctamente"}
 
     def obtener_perfil(self, usuario_id: int) -> UsuarioReadWithRoles:
         """Obtiene el perfil de un usuario con roles."""

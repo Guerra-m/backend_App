@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import APIRouter, Query, status, Depends
 from app.modules.categoria.categoria_service import CategoriaService
 from app.modules.categoria.categoria_uow import CategoriaUnitOfWork
@@ -10,7 +10,7 @@ from app.core.deps import get_current_active_user, require_role
 from app.modules.usuario.usuario_schema import UsuarioAuth
 
 
-categoria_router = APIRouter(prefix="/categorias", tags=["Categorías"])
+categoria_router = APIRouter(prefix="/api/v1/categorias", tags=["Categorías"])
 
 
 def get_categoria_service() -> CategoriaService:
@@ -24,9 +24,10 @@ def listar_categorias(
     _user: Annotated[UsuarioAuth, Depends(get_current_active_user)],
     offset: Annotated[int, Query(ge=0, description="Cantidad de registros a omitir")] = 0,
     limit: Annotated[int, Query(ge=1, le=100, description="Cantidad máxima a devolver")] = 20,
+    parent_id: Annotated[Optional[int], Query(description="Filtrar por categoría padre")] = None,
     service: CategoriaService = Depends(get_categoria_service)
 ):
-    return service.listar_categorias(offset=offset, limit=limit)
+    return service.listar_categorias(offset=offset, limit=limit, parent_id=parent_id)
 
 #Trae todas las categorias principales/padres
 @categoria_router.get("/raices", response_model=list[CategoriaRead])
@@ -48,7 +49,7 @@ def obtener_categoria(
 
 # POST ───────────────────────────────────────────────────────────────────
 
-@categoria_router.post("/", response_model=CategoriaRead, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_role(["ADMIN", "STOCK"]))])
+@categoria_router.post("/", response_model=CategoriaRead, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_role(["ADMIN"]))])
 def crear_categoria(
     data: CategoriaCreate,
     service: CategoriaService = Depends(get_categoria_service)
@@ -58,7 +59,7 @@ def crear_categoria(
 
 # PUT ────────────────────────────────────────────────────────────────────
 
-@categoria_router.put("/{categoria_id}", response_model=CategoriaRead, dependencies=[Depends(require_role(["ADMIN", "STOCK"]))])
+@categoria_router.put("/{categoria_id}", response_model=CategoriaRead, dependencies=[Depends(require_role(["ADMIN"]))])
 def actualizar_categoria(
     categoria_id: int,
     data: CategoriaUpdate,
@@ -74,5 +75,6 @@ def eliminar_categoria(
     categoria_id: int,
     service: CategoriaService = Depends(get_categoria_service)
 ):
-    """Soft delete: marca deleted_at, no elimina físicamente."""
+    """Soft delete: marca deleted_at, no elimina físicamente.
+    Si tiene productos activos devuelve 409"""
     return service.eliminar_categoria(categoria_id)

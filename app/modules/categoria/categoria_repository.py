@@ -2,11 +2,11 @@ from datetime import datetime, timezone
 from sqlmodel import Session, select
 from app.modules.categoria.categoria_model import Categoria
 from app.modules.categoria.categoria_schema import CategoriaCreate, CategoriaUpdate
+from app.core.base_repository import BaseRepository
 
-
-class CategoriaRepository:
+class CategoriaRepository(BaseRepository[Categoria]):
     def __init__(self, session: Session):
-        self.session = session
+        super().__init__(Categoria, session)
 
     def create(self, data: CategoriaCreate) -> Categoria:
         categoria = Categoria(**data.model_dump())
@@ -20,14 +20,14 @@ class CategoriaRepository:
             raise ValueError(f"Categoría con id {categoria_id} no encontrada")
         return categoria
 
-    def get_all(self, offset: int = 0, limit: int = 20) -> list[Categoria]:
-        statement = (
-            select(Categoria)
-            .where(Categoria.deleted_at == None)
-            .offset(offset)
-            .limit(limit)
-        )
-        return self.session.exec(statement).all()
+    def get_all(self, offset: int = 0, limit: int = 20, parent_id: int | None = None) -> list[Categoria]:
+        statement = select(Categoria).where(Categoria.deleted_at == None)
+
+        if parent_id is not None:
+            statement = statement.where(Categoria.parent_id == parent_id)
+
+        statement = statement.offset(offset).limit(limit)
+        return list(self.session.exec(statement).all())
 
     def get_raices(self) -> list[Categoria]:
         """Devuelve solo las categorías sin padre (nivel raíz)."""
@@ -53,3 +53,17 @@ class CategoriaRepository:
         self.session.add(categoria)
         self.session.flush()
         return categoria
+
+    def tiene_productos_activos(self, categoria_id: int) -> bool:
+        """Verifica si la categoría tiene productos activos vinculados (para validar soft delete)."""
+        from app.modules.producto_categoria.producto_categoria_model import ProductoCategoria
+        from app.modules.producto.producto_model import Producto
+        statement = (
+            select(ProductoCategoria)
+            .join(Producto, Producto.id == ProductoCategoria.producto_id)
+            .where(
+                ProductoCategoria.categoria_id == categoria_id,
+                Producto.deleted_at == None,
+            )
+        )
+        return self.session.exec(statement).first() is not None

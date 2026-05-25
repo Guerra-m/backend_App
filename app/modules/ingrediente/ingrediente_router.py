@@ -9,7 +9,7 @@ from app.modules.ingrediente.ingrediente_schema import (
 from app.core.deps import get_current_active_user, require_role
 from app.modules.usuario.usuario_schema import UsuarioAuth
 
-ingrediente_router = APIRouter(prefix="/ingredientes", tags=["Ingredientes"])
+ingrediente_router = APIRouter(prefix="/api/v1/ingredientes", tags=["Ingredientes"])
 
 
 def get_ingrediente_service() -> IngredienteService:
@@ -20,7 +20,7 @@ def get_ingrediente_service() -> IngredienteService:
 
 @ingrediente_router.get("/", response_model=list[IngredienteRead])
 def listar_ingredientes(
-    
+    _user: Annotated[UsuarioAuth, Depends(get_current_active_user)],
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     service: IngredienteService = Depends(get_ingrediente_service)

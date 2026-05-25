@@ -1,10 +1,11 @@
 from sqlmodel import Session, select
 from app.modules.usuario_rol.usuario_rol_model import UsuarioRol
+from app.core.base_repository import BaseRepository
 
 
-class UsuarioRolRepository:
+class UsuarioRolRepository(BaseRepository[UsuarioRol]):
     def __init__(self, session: Session):
-        self.session = session
+        super().__init__(UsuarioRol, session)
 
     def create(self, usuario_rol: UsuarioRol) -> UsuarioRol:
         self.session.add(usuario_rol)
