@@ -1,7 +1,4 @@
 """
-Modelo Rol — tabla catálogo 'rol' en PostgreSQL.
-PK semántica (codigo), no surrogate. Se pobla vía seed.
-
 Roles del sistema:
   ADMIN   — acceso total sin restricciones
   STOCK   — actualiza stock y disponible

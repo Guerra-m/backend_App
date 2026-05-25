@@ -1,5 +1,3 @@
-"""Service de DireccionEntrega — el usuario solo opera sobre sus propias direcciones."""
-
 from fastapi import HTTPException, status
 
 from app.modules.direccion_entrega.direccion_entrega_uow import DireccionEntregaUnitOfWork
@@ -48,3 +46,14 @@ class DireccionEntregaService:
                 )
             uow.direcciones.soft_delete(direccion)
             return {"mensaje": f"Dirección {direccion_id} eliminada correctamente"}
+
+    def marcar_principal(self, usuario_id: int, direccion_id: int) -> DireccionEntregaRead:
+        with self.uow as uow:
+            direccion = uow.direcciones.get_by_id(direccion_id)
+            if not direccion or direccion.usuario_id != usuario_id:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Dirección no encontrada",
+                )
+            direccion = uow.direcciones.marcar_como_principal(usuario_id, direccion_id)
+            return DireccionEntregaRead.model_validate(direccion)

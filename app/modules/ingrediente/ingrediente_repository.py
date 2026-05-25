@@ -2,11 +2,12 @@ from datetime import datetime, timezone
 from sqlmodel import Session, select
 from app.modules.ingrediente.ingrediente_model import Ingrediente
 from app.modules.ingrediente.ingrediente_schema import IngredienteCreate, IngredienteUpdate
+from app.core.base_repository import BaseRepository
 
-
-class IngredienteRepository:
+class IngredienteRepository(BaseRepository[Ingrediente]):
     def __init__(self, session: Session):
-        self.session = session
+        super().__init__(Ingrediente, session)
+
 
     def create(self, data: IngredienteCreate) -> Ingrediente:
         ingrediente = Ingrediente(**data.model_dump())

@@ -1,11 +1,12 @@
 from datetime import datetime, timezone
 from sqlmodel import Session, select
 from app.modules.refresh_token.refresh_token_model import RefreshToken
+from app.core.base_repository import BaseRepository
 
 
-class RefreshTokenRepository:
+class RefreshTokenRepository(BaseRepository[RefreshToken]):
     def __init__(self, session: Session):
-        self.session = session
+        super().__init__(RefreshToken, session)
 
     def create(self, token: RefreshToken) -> RefreshToken:
         self.session.add(token)

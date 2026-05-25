@@ -9,7 +9,7 @@ from app.core.deps import get_current_active_user, require_role
 from app.modules.usuario.usuario_schema import UsuarioAuth
 
 producto_ingrediente_router = APIRouter(
-    prefix="/producto-ingrediente",
+    prefix="/api/v1/producto-ingrediente",
     tags=["ProductoIngrediente"]
 )
 

@@ -3,7 +3,7 @@ Router de autenticación y gestión de usuarios.
 Endpoints: register, login, logout, refresh, me, admin routes.
 """
 
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, Query, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -14,6 +14,7 @@ from app.modules.usuario.usuario_schema import (
     UsuarioReadWithRoles,
     UsuarioAuth,
     TokenRefreshRequest,
+    UsuarioUpdate,
 )
 from app.modules.usuario.usuario_service import UsuarioService
 from app.modules.usuario.usuario_uow import UsuarioUnitOfWork
@@ -137,6 +138,32 @@ def read_me(
 def listar_usuarios(
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    rol: Annotated[Optional[str], Query(description="Filtrar por rol (ADMIN, STOCK, PEDIDOS, CLIENT)")] = None,
     service: UsuarioService = Depends(get_usuario_service),
 ):
-    return service.listar_usuarios(offset=offset, limit=limit)
+    return service.listar_usuarios(offset=offset, limit=limit, rol=rol)
+
+
+@usuario_router.put(
+    "/admin/usuarios/{usuario_id}",
+    response_model=UsuarioReadWithRoles,
+    dependencies=[Depends(require_role(["ADMIN"]))],
+)
+def actualizar_usuario(
+    usuario_id: int,
+    data: UsuarioUpdate,
+    service: UsuarioService = Depends(get_usuario_service),
+):
+    return service.actualizar_usuario(usuario_id, data)
+
+
+@usuario_router.delete(
+    "/admin/usuarios/{usuario_id}",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(require_role(["ADMIN"]))],
+)
+def eliminar_usuario(
+    usuario_id: int,
+    service: UsuarioService = Depends(get_usuario_service),
+):
+    return service.eliminar_usuario(usuario_id)

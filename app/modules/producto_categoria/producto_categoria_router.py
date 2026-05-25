@@ -11,7 +11,7 @@ from app.core.deps import get_current_active_user, require_role
 from app.modules.usuario.usuario_schema import UsuarioAuth
 
 producto_categoria_router = APIRouter(
-    prefix="/producto-categoria",
+    prefix="/api/v1/producto-categorias",
     tags=["ProductoCategoria"]
 )
 

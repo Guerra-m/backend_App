@@ -1,17 +1,25 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import APIRouter, Query, status, Depends
+from pydantic import BaseModel
+
 from app.modules.producto.producto_service import ProductoService
 from app.modules.producto.producto_uow import ProductoUnitOfWork
 from app.modules.producto.producto_schema import ProductoCreate, ProductoUpdate, ProductoRead
-
 from app.core.deps import get_current_active_user, require_role
 from app.modules.usuario.usuario_schema import UsuarioAuth
 
-producto_router = APIRouter(prefix="/productos", tags=["Productos"])
+producto_router = APIRouter(
+    prefix="/api/v1/productos", 
+    tags=["Productos"])
 
 
 def get_producto_service() -> ProductoService:
     return ProductoService(ProductoUnitOfWork())
+
+
+class DisponibilidadUpdate(BaseModel):
+    disponible: bool
+    stock_cantidad: Optional[int] = None
 
 
 # GET ────────────────────────────────────────────────────────────────────
@@ -19,12 +27,17 @@ def get_producto_service() -> ProductoService:
 @producto_router.get("/", response_model=list[ProductoRead])
 def listar_productos(
     _user: Annotated[UsuarioAuth, Depends(get_current_active_user)],
-    offset: Annotated[int, Query(ge=0, description="Registros a omitir")] = 0,
+    offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
-    service: ProductoService = Depends(get_producto_service)
+    categoria_id: Annotated[Optional[int], Query(description="Filtrar por categoría")] = None,
+    disponible: Annotated[Optional[bool], Query(description="Filtrar por disponibilidad")] = None,
+    texto: Annotated[Optional[str], Query(description="Búsqueda por nombre")] = None,
+    service: ProductoService = Depends(get_producto_service),
 ):
-    #Lista todos los productos no eliminados con paginación
-    return service.listar_productos(offset=offset, limit=limit)
+    return service.listar_filtrado(
+        offset=offset, limit=limit,
+        categoria_id=categoria_id, disponible=disponible, texto=texto,
+    )
 
 
 @producto_router.get("/disponibles", response_model=list[ProductoRead])
@@ -49,7 +62,11 @@ def obtener_producto(
 
 # POST ───────────────────────────────────────────────────────────────────
 
-@producto_router.post("/", response_model=ProductoRead, status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_role(["ADMIN", "STOCK"]))])
+@producto_router.post(
+        "/", response_model=ProductoRead, 
+        status_code=status.HTTP_201_CREATED, 
+        dependencies=[Depends(require_role(["ADMIN"]))]
+        )
 def crear_producto(
     data: ProductoCreate,
     service: ProductoService = Depends(get_producto_service)
@@ -59,7 +76,11 @@ def crear_producto(
 
 # PUT ────────────────────────────────────────────────────────────────────
 
-@producto_router.put("/{producto_id}", response_model=ProductoRead, dependencies=[Depends(require_role(["ADMIN", "STOCK"]))])
+@producto_router.put(
+        "/{producto_id}", 
+        response_model=ProductoRead, 
+        dependencies=[Depends(require_role(["ADMIN"]))]
+        )
 def actualizar_producto(
     producto_id: int,
     data: ProductoUpdate,
@@ -70,7 +91,11 @@ def actualizar_producto(
 
 # DELETE ─────────────────────────────────────────────────────────────────
 
-@producto_router.delete("/{producto_id}", status_code=status.HTTP_200_OK, dependencies=[Depends(require_role(["ADMIN"]))])
+@producto_router.delete(
+        "/{producto_id}", 
+        status_code=status.HTTP_200_OK, 
+        dependencies=[Depends(require_role(["ADMIN"]))]
+        )
 def eliminar_producto(
     producto_id: int,
     service: ProductoService = Depends(get_producto_service)
@@ -78,12 +103,31 @@ def eliminar_producto(
     #Soft delete
     return service.eliminar_producto(producto_id)
 
+# disponibilidad — ADMIN y STOCK pueden usar esto para activar/desactivar productos y 
+# actualizar stock sin tocar otros campos.
+
+@producto_router.patch(
+    "/{producto_id}/disponibilidad",
+    response_model=ProductoRead,
+    dependencies=[Depends(require_role(["ADMIN", "STOCK"]))],
+)
+def actualizar_disponibilidad(
+    producto_id: int,
+    data: DisponibilidadUpdate,
+    service: ProductoService = Depends(get_producto_service),
+):
+    """Activa/desactiva un producto y opcionalmente actualiza stock. ADMIN y STOCK."""
+    return service.actualizar_disponibilidad(
+        producto_id, data.disponible, data.stock_cantidad
+    )
+
 
 # Relaciones: Categorías ─────────────────────────────────────────────────
 
 @producto_router.post(
     "/{producto_id}/categorias/{categoria_id}",
-    status_code=status.HTTP_200_OK, dependencies=[Depends(require_role(["ADMIN", "STOCK"]))]
+    status_code=status.HTTP_200_OK, 
+    dependencies=[Depends(require_role(["ADMIN"]))]
 )
 def agregar_categoria(
     producto_id: int,
@@ -97,7 +141,7 @@ def agregar_categoria(
 @producto_router.delete(
     "/{producto_id}/categorias/{categoria_id}",
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(require_role(["ADMIN", "STOCK"]))],
+    dependencies=[Depends(require_role(["ADMIN"]))],
 )
 def quitar_categoria(
     producto_id: int,
@@ -112,7 +156,7 @@ def quitar_categoria(
 @producto_router.post(
     "/{producto_id}/ingredientes/{ingrediente_id}",
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(require_role(["ADMIN", "STOCK"]))],
+    dependencies=[Depends(require_role(["ADMIN"]))],
 )
 def agregar_ingrediente(
     producto_id: int,
@@ -126,7 +170,7 @@ def agregar_ingrediente(
 @producto_router.delete(
     "/{producto_id}/ingredientes/{ingrediente_id}",
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(require_role(["ADMIN", "STOCK"]))],
+    dependencies=[Depends(require_role(["ADMIN"]))],
 )
 def quitar_ingrediente(
     producto_id: int,

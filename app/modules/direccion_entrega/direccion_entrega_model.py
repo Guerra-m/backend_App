@@ -1,14 +1,10 @@
-"""
-Modelo DireccionEntrega — tabla 'direccion_entrega'.
-Direcciones de envío del usuario.
-"""
-
-from typing import Optional, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship
 
 if TYPE_CHECKING:
     from app.modules.usuario.usuario_model import Usuario
+    from app.modules.pedido.pedido_model import Pedido
 
 
 class DireccionEntrega(SQLModel, table=True):
@@ -38,3 +34,5 @@ class DireccionEntrega(SQLModel, table=True):
 
     # Relaciones
     usuario: Optional["Usuario"] = Relationship(back_populates="direcciones")
+
+    pedidos: List["Pedido"] = Relationship(back_populates="direccion")

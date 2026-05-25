@@ -1,5 +1,3 @@
-"""Router de Roles — solo lectura, solo ADMIN."""
-
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
