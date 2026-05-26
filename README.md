@@ -12,3 +12,5 @@ Comandos para ejecucion (puede variar segun version de python instalada):
 ---------------------------------------
 Ejecutar seed
 - python -m app.db.seed
+
+video: https://www.youtube.com/watch?v=2V3IXbaUrUI
