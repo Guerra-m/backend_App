@@ -1,18 +1,3 @@
-"""
-PedidoService — lógica de negocio para pedidos.
-
-FSM validada aquí, NUNCA en el router.
-
-Transiciones válidas:
-  PENDIENTE  → CONFIRMADO, CANCELADO
-  CONFIRMADO → EN_PREP, CANCELADO
-  EN_PREP    → EN_CAMINO, CANCELADO (CANCELADO solo ADMIN/PEDIDOS)
-  EN_CAMINO  → ENTREGADO, CANCELADO (CANCELADO solo ADMIN/PEDIDOS)
-  ENTREGADO  → (terminal)
-  CANCELADO  → (terminal)
-
-CLIENT solo puede cancelar desde PENDIENTE o CONFIRMADO.
-"""
 
 import json
 from fastapi import HTTPException, status
