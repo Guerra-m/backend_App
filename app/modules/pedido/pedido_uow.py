@@ -1,8 +1,3 @@
-"""
-PedidoUnitOfWork — transacción atómica para crear y gestionar pedidos.
-Agrupa todos los repositorios necesarios para el dominio de ventas.
-"""
-
 from sqlmodel import Session
 from app.core.database import engine
 from app.modules.pedido.pedido_repository import PedidoRepository

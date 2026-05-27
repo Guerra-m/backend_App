@@ -1,8 +1,3 @@
-"""
-Modelo UsuarioRol — tabla intermedia 'usuario_rol'.
-PK compuesta: (usuario_id, rol_codigo).
-"""
-
 from typing import Optional, TYPE_CHECKING
 from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship

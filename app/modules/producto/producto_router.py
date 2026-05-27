@@ -26,7 +26,6 @@ class DisponibilidadUpdate(BaseModel):
 
 @producto_router.get("/", response_model=list[ProductoRead])
 def listar_productos(
-    _user: Annotated[UsuarioAuth, Depends(get_current_active_user)],
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     categoria_id: Annotated[Optional[int], Query(description="Filtrar por categoría")] = None,
@@ -42,7 +41,6 @@ def listar_productos(
 
 @producto_router.get("/disponibles", response_model=list[ProductoRead])
 def listar_disponibles(
-    _user: Annotated[UsuarioAuth, Depends(get_current_active_user)],
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     service: ProductoService = Depends(get_producto_service)
@@ -54,7 +52,6 @@ def listar_disponibles(
 @producto_router.get("/{producto_id}", response_model=ProductoRead)
 def obtener_producto(
     producto_id: int,
-    _user: Annotated[UsuarioAuth, Depends(get_current_active_user)],
     service: ProductoService = Depends(get_producto_service)
 ):
     return service.obtener_producto(producto_id)

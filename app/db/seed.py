@@ -1,7 +1,4 @@
 """
-Seed obligatorio — carga datos iniciales.
-Idempotente: se puede ejecutar múltiples veces sin duplicar datos.
-
 Uso:
     python -m app.db.seed
 
@@ -18,18 +15,18 @@ from app.core.security import hash_password
 from app.modules.rol.rol_model import Rol
 from app.modules.usuario.usuario_model import Usuario
 from app.modules.usuario_rol.usuario_rol_model import UsuarioRol
-from app.modules.direccion_entrega.direccion_entrega_model import DireccionEntrega              # noqa: F401
-from app.modules.refresh_token.refresh_token_model import RefreshToken                          # noqa: F401
+from app.modules.direccion_entrega.direccion_entrega_model import DireccionEntrega
+from app.modules.refresh_token.refresh_token_model import RefreshToken
 from app.modules.forma_pago.forma_pago_model import FormaPago
 from app.modules.estado_pedido.estado_pedido_model import EstadoPedido
-from app.modules.categoria.categoria_model import Categoria                                    # noqa: F401
-from app.modules.ingrediente.ingrediente_model import Ingrediente                              # noqa: F401
-from app.modules.producto.producto_model import Producto                                       # noqa: F401
-from app.modules.producto_categoria.producto_categoria_model import ProductoCategoria          # noqa: F401
-from app.modules.producto_ingrediente.producto_ingrediente_model import ProductoIngrediente    # noqa: F401
-from app.modules.pedido.pedido_model import Pedido                                              # noqa: F401
-from app.modules.detalle_pedido.detalle_pedido_model import DetallePedido                       # noqa: F401
-from app.modules.historial_estado_pedido.historial_estado_pedido_model import HistorialEstadoPedido  # noqa: F401
+from app.modules.categoria.categoria_model import Categoria
+from app.modules.ingrediente.ingrediente_model import Ingrediente
+from app.modules.producto.producto_model import Producto
+from app.modules.producto_categoria.producto_categoria_model import ProductoCategoria
+from app.modules.producto_ingrediente.producto_ingrediente_model import ProductoIngrediente
+from app.modules.pedido.pedido_model import Pedido
+from app.modules.detalle_pedido.detalle_pedido_model import DetallePedido
+from app.modules.historial_estado_pedido.historial_estado_pedido_model import HistorialEstadoPedido
 # Datos ------------
 
 ROLES = [

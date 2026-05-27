@@ -20,7 +20,6 @@ class UsuarioUpdate(BaseModel):
 
 
 class UsuarioRead(BaseModel):
-    """Vista pública del usuario — excluye password_hash."""
     id: int
     nombre: str
     apellido: str
@@ -33,17 +32,13 @@ class UsuarioRead(BaseModel):
 
 
 class UsuarioReadWithRoles(UsuarioRead):
-    """Usuario con sus roles asignados."""
     roles: list[str] = []
 
     model_config = {"from_attributes": True}
 
 
 class UsuarioAuth(BaseModel):
-    """
-    Representación del usuario autenticado en el request.
-    Usado internamente por deps.py — contiene roles para RBAC.
-    """
+  
     id: int
     nombre: str
     apellido: str
@@ -53,12 +48,10 @@ class UsuarioAuth(BaseModel):
 
 
 class Token(BaseModel):
-    """Respuesta del endpoint /token."""
     access_token: str
     token_type: str = "bearer"
     expires_in: int  # segundos hasta expiración
 
 
 class TokenRefreshRequest(BaseModel):
-    """Body para renovar access token."""
     refresh_token: str

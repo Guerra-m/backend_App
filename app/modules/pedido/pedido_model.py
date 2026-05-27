@@ -1,5 +1,3 @@
-"""Pedido — tabla principal 'pedido'."""
-
 from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship

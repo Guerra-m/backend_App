@@ -1,10 +1,3 @@
-"""
-Modelo RefreshToken — tabla 'refresh_token' (Session).
-
-Invalidación segura en logout: revoked_at = now() → token inválido.
-Validar: expires_at > now() AND revoked_at IS NULL.
-"""
-
 from typing import Optional, TYPE_CHECKING
 from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship
@@ -23,7 +16,7 @@ class RefreshToken(SQLModel, table=True):
     usuario_id: int = Field(foreign_key="usuario.id", nullable=False)
 
     # Atributos
-    token_hash: str = Field(max_length=64, unique=True, nullable=False)  # SHA-256
+    token_hash: str = Field(max_length=64, unique=True, nullable=False)
     expires_at: datetime = Field(nullable=False)
     revoked_at: Optional[datetime] = Field(default=None)
 

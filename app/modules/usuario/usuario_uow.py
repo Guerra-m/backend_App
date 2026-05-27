@@ -8,7 +8,6 @@ from app.modules.refresh_token.refresh_token_repository import RefreshTokenRepos
 
 class UsuarioUnitOfWork:
     """
-    UoW para operaciones de autenticación y gestión de usuarios.
     Agrupa: Usuario, UsuarioRol, Rol, RefreshToken en una transacción.
     """
 

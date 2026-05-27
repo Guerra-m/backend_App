@@ -1,5 +1,3 @@
-"""Router para gestión de roles de usuario (solo ADMIN)."""
-
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status

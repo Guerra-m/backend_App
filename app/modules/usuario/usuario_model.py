@@ -1,13 +1,3 @@
-"""
-Modelo Usuario — tabla 'usuario' en PostgreSQL.
-Dominio 1: Identidad & Acceso.
-
-Campos clave para seguridad:
-  - password_hash: hash bcrypt (CHAR(60), nunca texto plano)
-  - Roles asignados vía tabla intermedia UsuarioRol
-  - deleted_at: soft delete
-"""
-
 from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship
