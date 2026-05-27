@@ -8,16 +8,16 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # Importar todos los modelos para que SQLModel los registre antes de crear las tablas
 from app.modules.rol.rol_model import Rol                                          
-from app.modules.usuario.usuario_model import Usuario                              
+from app.modules.usuario.usuario_model import Usuario
 from app.modules.usuario_rol.usuario_rol_model import UsuarioRol                    
 from app.modules.direccion_entrega.direccion_entrega_model import DireccionEntrega
-from app.modules.refresh_token.refresh_token_model import RefreshToken    
+from app.modules.refresh_token.refresh_token_model import RefreshToken
 
-from app.modules.forma_pago.forma_pago_model import FormaPago                                  # noqa
+from app.modules.forma_pago.forma_pago_model import FormaPago
 from app.modules.estado_pedido.estado_pedido_model import EstadoPedido
-from app.modules.pedido.pedido_model import Pedido                                             # noqa
-from app.modules.detalle_pedido.detalle_pedido_model import DetallePedido                      # noqa
-from app.modules.historial_estado_pedido.historial_estado_pedido_model import HistorialEstadoPedido  # noqa
+from app.modules.pedido.pedido_model import Pedido
+from app.modules.detalle_pedido.detalle_pedido_model import DetallePedido
+from app.modules.historial_estado_pedido.historial_estado_pedido_model import HistorialEstadoPedido
 
 from app.modules.categoria.categoria_model import Categoria
 from app.modules.ingrediente.ingrediente_model import Ingrediente
@@ -50,7 +50,7 @@ app = FastAPI(
     title="Segundo parcial",
     version="1.0.0",
     description=(
-        "Proyecto para el parcial de programacion 4\n\n" \
+        "Proyecto para el parcial 2 de programacion 4\n\n" \
         "Gomez Cristian \n\n"
         "Guerra Martin"
     ),

@@ -21,7 +21,6 @@ def get_categoria_service() -> CategoriaService:
 #Trae todas las categorias utilizando el offset y limit para definir que traer
 @categoria_router.get("/", response_model=list[CategoriaRead])
 def listar_categorias(
-    _user: Annotated[UsuarioAuth, Depends(get_current_active_user)],
     offset: Annotated[int, Query(ge=0, description="Cantidad de registros a omitir")] = 0,
     limit: Annotated[int, Query(ge=1, le=100, description="Cantidad máxima a devolver")] = 20,
     parent_id: Annotated[Optional[int], Query(description="Filtrar por categoría padre")] = None,
@@ -32,7 +31,6 @@ def listar_categorias(
 #Trae todas las categorias principales/padres
 @categoria_router.get("/raices", response_model=list[CategoriaRead])
 def listar_raices(
-    _user: Annotated[UsuarioAuth, Depends(get_current_active_user)],
     service: CategoriaService = Depends(get_categoria_service),
 ):
     return service.listar_raices()
@@ -41,7 +39,6 @@ def listar_raices(
 @categoria_router.get("/{categoria_id}", response_model=CategoriaReadWithSubs)
 def obtener_categoria(
     categoria_id: int,
-    _user: Annotated[UsuarioAuth, Depends(get_current_active_user)],
     service: CategoriaService = Depends(get_categoria_service)
 ):
     return service.obtener_categoria(categoria_id)

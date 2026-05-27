@@ -23,7 +23,7 @@ class DetallePedido(SQLModel, table=True):
     nombre_snapshot: str = Field(max_length=200, nullable=False)
     precio_snapshot: float = Field(nullable=False, ge=0)
     subtotal_snap: float = Field(nullable=False)
-    personalizacion: Optional[str] = Field(default=None)  # JSON string: [id1, id2, ...]
+    personalizacion: Optional[str] = Field(default=None)
 
     # Audit
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

@@ -1,8 +1,3 @@
-"""
-Router de autenticación y gestión de usuarios.
-Endpoints: register, login, logout, refresh, me, admin routes.
-"""
-
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, Query, Response, status
@@ -48,10 +43,7 @@ def login(
     response: Response,
     service: UsuarioService = Depends(get_usuario_service),
 ):
-    """
-    Autentica al usuario. El campo 'username' del form recibe el email.
-    Setea access_token en cookie HttpOnly y retorna refresh_token en body.
-    """
+   
     result = service.authenticate(form_data.username, form_data.password)
 
     # Cookie HttpOnly para el access token

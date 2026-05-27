@@ -1,7 +1,3 @@
-"""
-Service de Usuario — lógica de negocio para autenticación y gestión.
-"""
-
 from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException, status
@@ -73,10 +69,7 @@ class UsuarioService:
             )
 
     def authenticate(self, email: str, password: str) -> dict:
-        """
-        Autentica con email + password.
-        Retorna access_token + refresh_token.
-        """
+       
         with self.uow as uow:
             usuario = uow.usuarios.get_by_email(email)
 

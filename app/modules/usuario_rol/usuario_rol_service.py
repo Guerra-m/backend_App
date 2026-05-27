@@ -1,5 +1,3 @@
-"""Service para asignar/revocar roles a usuarios (operación de ADMIN)."""
-
 from fastapi import HTTPException, status
 
 from app.modules.usuario_rol.usuario_rol_uow import UsuarioRolUnitOfWork

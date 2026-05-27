@@ -1,5 +1,3 @@
-"""EstadoPedido — tabla catálogo 'estado_pedido'. PK semántica, seed obligatorio."""
-
 from typing import Optional, List, TYPE_CHECKING
 from sqlmodel import SQLModel, Field, Relationship
 

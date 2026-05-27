@@ -1,18 +1,3 @@
-"""
-Dependencias de autenticación y autorización para FastAPI.
-
-Flujo:
-    Request HTTP
-        ↓
-    oauth2_scheme → extrae token Bearer de cookie HttpOnly
-        ↓
-    get_current_user → decodifica JWT, busca usuario en BD, carga roles
-        ↓
-    get_current_active_user → valida que no esté soft-deleted
-        ↓
-    require_role([...]) → valida RBAC contra roles del usuario
-"""
-
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request, status
@@ -52,10 +37,7 @@ oauth2_scheme = OAuth2PasswordBearerWithCookie(tokenUrl="/api/v1/auth/token")
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
 ) -> UsuarioAuth:
-    """
-    Decodifica el JWT y retorna el usuario con sus roles.
-    Usa sesión directa (lectura liviana, no requiere UoW completo).
-    """
+   
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Credenciales inválidas o token expirado",
@@ -101,19 +83,11 @@ async def get_current_user(
 async def get_current_active_user(
     current_user: Annotated[UsuarioAuth, Depends(get_current_user)],
 ) -> UsuarioAuth:
-    """Verifica que el usuario no esté eliminado (ya cubierto en get_current_user)."""
     return current_user
 
 
 def require_role(allowed_roles: list[str]):
-    """
-    Factory de dependencias para RBAC.
-    Genera una dependencia que valida si el usuario tiene alguno de los roles permitidos.
-
-    Uso:
-        @router.get("/admin", dependencies=[Depends(require_role(["ADMIN"]))])
-    """
-
+   
     async def role_checker(
         current_user: Annotated[UsuarioAuth, Depends(get_current_active_user)],
     ) -> UsuarioAuth:

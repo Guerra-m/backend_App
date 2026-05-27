@@ -1,5 +1,3 @@
-"""Repositorio de Pedido — extiende BaseRepository con queries propias."""
-
 from datetime import datetime, timezone
 from sqlmodel import Session, select
 from app.core.base_repository import BaseRepository
