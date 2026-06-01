@@ -2,8 +2,8 @@ from typing import Optional, List
 from datetime import datetime
 from pydantic import BaseModel, field_validator
 
-from backend.app.modules.categoria.categoria_schema import CategoriaRead
-from backend.app.modules.ingrediente.ingrediente_schema import IngredienteRead
+from app.modules.categoria.categoria_schema import CategoriaRead
+from app.modules.ingrediente.ingrediente_schema import IngredienteRead
 
 
 class ProductoCreate(BaseModel):
