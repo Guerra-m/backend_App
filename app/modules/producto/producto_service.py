@@ -1,6 +1,8 @@
 from fastapi import HTTPException, status
+from app.modules.categoria.categoria_schema import CategoriaRead
+from app.modules.ingrediente.ingrediente_schema import IngredienteRead
 from app.modules.producto.producto_uow import ProductoUnitOfWork
-from app.modules.producto.producto_schema import ProductoCreate, ProductoUpdate, ProductoRead
+from app.modules.producto.producto_schema import ProductoCreate, ProductoReadConRelaciones, ProductoUpdate, ProductoRead
 from app.modules.producto_categoria.producto_categoria_schema import ProductoCategoriaCreate
 from app.modules.producto_ingrediente.producto_ingrediente_schema import ProductoIngredienteCreate
 
