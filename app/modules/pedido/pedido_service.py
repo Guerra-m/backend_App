@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> 85d6e81cf8f66b9e8dae3a009360169a3d10b677
 import json
 from fastapi import HTTPException, status
 

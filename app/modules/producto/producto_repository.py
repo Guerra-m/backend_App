@@ -19,6 +19,10 @@ class ProductoRepository(BaseRepository[Producto]):
         producto = self.session.get(Producto, producto_id)
         if not producto or producto.deleted_at is not None:
             raise ValueError(f"Producto con id {producto_id} no encontrado")
+        
+        # Forzar carga de relaciones
+        _ = producto.categorias_link
+        _ = producto.ingredientes_link
         return producto
 
     def get_all(self, offset: int = 0, limit: int = 20) -> list[Producto]:
