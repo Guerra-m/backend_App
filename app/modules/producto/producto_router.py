@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from app.modules.producto.producto_service import ProductoService
 from app.modules.producto.producto_uow import ProductoUnitOfWork
-from app.modules.producto.producto_schema import ProductoCreate, ProductoUpdate, ProductoRead
+from app.modules.producto.producto_schema import ProductoCreate, ProductoReadConRelaciones, ProductoUpdate, ProductoRead
 from app.core.deps import get_current_active_user, require_role
 from app.modules.usuario.usuario_schema import UsuarioAuth
 
@@ -49,7 +49,7 @@ def listar_disponibles(
     return service.listar_disponibles(offset=offset, limit=limit)
 
 
-@producto_router.get("/{producto_id}", response_model=ProductoRead)
+@producto_router.get("/{producto_id}", response_model=ProductoReadConRelaciones)
 def obtener_producto(
     producto_id: int,
     service: ProductoService = Depends(get_producto_service)

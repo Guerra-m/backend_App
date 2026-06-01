@@ -2,6 +2,9 @@ from typing import Optional, List
 from datetime import datetime
 from pydantic import BaseModel, field_validator
 
+from backend.app.modules.categoria.categoria_schema import CategoriaRead
+from backend.app.modules.ingrediente.ingrediente_schema import IngredienteRead
+
 
 class ProductoCreate(BaseModel):
     nombre: str
@@ -55,3 +58,7 @@ class ProductoReadDetalle(ProductoRead):
     ingredientes: List[dict] = []
 
     model_config = {"from_attributes": True}
+
+class ProductoReadConRelaciones(ProductoRead):
+    categorias: list[CategoriaRead] = []
+    ingredientes: list[IngredienteRead] = []

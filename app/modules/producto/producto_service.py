@@ -14,13 +14,28 @@ class ProductoService:
             producto = uow.productos.create(data)
             return ProductoRead.model_validate(producto)
 
-    def obtener_producto(self, producto_id: int) -> ProductoRead:
+    def obtener_producto(self, producto_id: int) -> ProductoReadConRelaciones:
         with self.uow as uow:
             try:
                 producto = uow.productos.get_by_id(producto_id)
             except ValueError as e:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-            return ProductoRead.model_validate(producto)
+                raise HTTPException(status_code=404, detail=str(e))
+            
+            categorias = [
+                CategoriaRead.model_validate(link.categoria)
+                for link in producto.categorias_link
+                if link.categoria and link.categoria.deleted_at is None
+            ]
+            ingredientes = [
+                IngredienteRead.model_validate(link.ingrediente)
+                for link in producto.ingredientes_link
+                if link.ingrediente
+            ]
+            
+            result = ProductoReadConRelaciones.model_validate(producto)
+            result.categorias = categorias
+            result.ingredientes = ingredientes
+            return result
 
     def listar_productos(self, offset: int = 0, limit: int = 20) -> list[ProductoRead]:
         with self.uow as uow:
