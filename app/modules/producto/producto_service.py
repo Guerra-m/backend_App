@@ -46,24 +46,31 @@ class ProductoService:
                 for p in uow.productos.get_all(offset=offset, limit=limit)
             ]
         
-    def listar_filtrado(
-        self,
-        offset: int = 0,
-        limit: int = 20,
-        categoria_id: int | None = None,
-        disponible: bool | None = None,
-        texto: str | None = None,
-    ) -> list[ProductoRead]:
+    def listar_filtrado(self, offset=0, limit=20, categoria_id=None, disponible=None, texto=None) -> list[ProductoReadConRelaciones]:
         with self.uow as uow:
-            return [
-                ProductoRead.model_validate(p)
-                for p in uow.productos.get_all_filtrado(
-                    offset=offset, limit=limit,
-                    categoria_id=categoria_id,
-                    disponible=disponible,
-                    texto=texto,
-                )
-            ]
+            productos = uow.productos.get_all_filtrado(
+                offset=offset, limit=limit,
+                categoria_id=categoria_id,
+                disponible=disponible,
+                texto=texto,
+            )
+            result = []
+            for producto in productos:
+                categorias = [
+                    CategoriaRead.model_validate(link.categoria)
+                    for link in producto.categorias_link
+                    if link.categoria and link.categoria.deleted_at is None
+                ]
+                ingredientes = [
+                    IngredienteRead.model_validate(link.ingrediente)
+                    for link in producto.ingredientes_link
+                    if link.ingrediente
+                ]
+                p = ProductoReadConRelaciones.model_validate(producto)
+                p.categorias = categorias
+                p.ingredientes = ingredientes
+                result.append(p)
+            return result
 
     def listar_disponibles(self, offset: int = 0, limit: int = 20) -> list[ProductoRead]:
         

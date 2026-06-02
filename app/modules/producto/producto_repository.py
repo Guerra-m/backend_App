@@ -4,6 +4,8 @@ from app.modules.producto.producto_model import Producto
 from app.modules.producto.producto_schema import ProductoCreate, ProductoUpdate
 from app.core.base_repository import BaseRepository
 
+from app.modules.categoria.categoria_schema import CategoriaRead
+from app.modules.ingrediente.ingrediente_schema import IngredienteRead
 
 class ProductoRepository(BaseRepository[Producto]):
     def __init__(self, session: Session):
@@ -60,7 +62,14 @@ class ProductoRepository(BaseRepository[Producto]):
             ).where(ProductoCategoria.categoria_id == categoria_id)
 
         statement = statement.offset(offset).limit(limit)
-        return list(self.session.exec(statement).all())
+
+        productos = list(self.session.exec(statement).all())
+
+        for producto in productos:
+            _ = producto.categorias_link
+            _ = producto.ingredientes_link
+
+        return productos
 
     def get_disponibles(self, offset: int = 0, limit: int = 20) -> list[Producto]:
         #Devuelve solo productos activos y con stock
