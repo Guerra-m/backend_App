@@ -4,7 +4,7 @@ Uso:
 
 Crea:
   - Roles: ADMIN, STOCK, PEDIDOS, CLIENT
-  - EstadoPedido: PENDIENTE, CONFIRMADO, EN_PREP, EN_CAMINO, ENTREGADO, CANCELADO
+  - EstadoPedido: PENDIENTE, CONFIRMADO, EN_PREP, ENTREGADO, CANCELADO
   - FormaPago: MERCADOPAGO, EFECTIVO, TRANSFERENCIA
   - Usuario admin por defecto
 """
@@ -13,6 +13,7 @@ from sqlmodel import Session, select
 from app.core.database import engine, create_db_and_tables
 from app.core.security import hash_password
 from app.modules.rol.rol_model import Rol
+from app.modules.unidad_medida.unidad_medida_model import UnidadMedida
 from app.modules.usuario.usuario_model import Usuario
 from app.modules.usuario_rol.usuario_rol_model import UsuarioRol
 from app.modules.direccion_entrega.direccion_entrega_model import DireccionEntrega
@@ -40,15 +41,23 @@ ESTADO_PEDIDOS = [
     {"codigo": "PENDIENTE",  "descripcion": "Pedido recibido, en espera de confirmación", "orden": 1, "es_terminal": False},
     {"codigo": "CONFIRMADO", "descripcion": "Pedido confirmado, en preparación",           "orden": 2, "es_terminal": False},
     {"codigo": "EN_PREP",    "descripcion": "Pedido en proceso de preparación",            "orden": 3, "es_terminal": False},
-    {"codigo": "EN_CAMINO",  "descripcion": "Pedido en tránsito para entrega",             "orden": 4, "es_terminal": False},
-    {"codigo": "ENTREGADO",  "descripcion": "Pedido entregado al cliente",                 "orden": 5, "es_terminal": True},
-    {"codigo": "CANCELADO",  "descripcion": "Pedido cancelado",                            "orden": 6, "es_terminal": True},
+    {"codigo": "ENTREGADO",  "descripcion": "Pedido entregado al cliente",                 "orden": 4, "es_terminal": True},
+    {"codigo": "CANCELADO",  "descripcion": "Pedido cancelado",                            "orden": 5, "es_terminal": True},
 ]
 
 FORMA_PAGOS = [
     {"codigo": "MERCADOPAGO",   "descripcion": "Pago mediante Mercado Pago",          "habilitado": True},
     {"codigo": "EFECTIVO",      "descripcion": "Pago en efectivo al recibir el pedido", "habilitado": True},
     {"codigo": "TRANSFERENCIA", "descripcion": "Pago mediante transferencia bancaria", "habilitado": True},
+]
+
+UNIDADES_MEDIDA = [
+    {"nombre": "kilogramo",  "simbolo": "kg",        "tipo": "peso"},
+    {"nombre": "gramo",      "simbolo": "g",         "tipo": "peso"},
+    {"nombre": "litro",      "simbolo": "L",         "tipo": "volumen"},
+    {"nombre": "mililitro",  "simbolo": "ml",        "tipo": "volumen"},
+    {"nombre": "unidad",     "simbolo": "ud",        "tipo": "contable"},
+    {"nombre": "porcion",    "simbolo": "porciones", "tipo": "contable"},
 ]
 
 USUARIOS = [
@@ -72,7 +81,7 @@ USUARIOS = [
 # Runner -----------
 
 def run() -> None:
-    print("=== Inyectando Seed — Parcial 2 Prog 4 ===\n")
+    print("=== Inyectando Seed — TPI Prog 4 ===\n")
     create_db_and_tables()
 
     with Session(engine) as session:
@@ -106,6 +115,20 @@ def run() -> None:
                 session.add(FormaPago(**data))
                 print(f"  [+] Creado: {data['codigo']}")
 
+        session.commit()
+
+        print("\nUnidades de Medida:")
+        for data in UNIDADES_MEDIDA:
+            from sqlmodel import select
+            existing = session.exec(
+                select(UnidadMedida).where(UnidadMedida.simbolo == data["simbolo"])
+            ).first()
+            if existing:
+                print(f"  [=] Ya existe: {data['simbolo']}")
+            else:
+                session.add(UnidadMedida(**data))
+                print(f"  [+] Creado: {data['nombre']} ({data['simbolo']})")
+                
         session.commit()
 
         print("\nUsuarios:")

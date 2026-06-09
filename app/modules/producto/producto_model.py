@@ -1,6 +1,9 @@
 from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime, timezone
-from sqlmodel import SQLModel, Field, Relationship
+from sqlalchemy import ARRAY, TEXT
+from sqlmodel import Column, SQLModel, Field, Relationship
+
+from app.modules.unidad_medida.unidad_medida_model import UnidadMedida
 
 if TYPE_CHECKING:
     from app.modules.producto_categoria.producto_categoria_model import ProductoCategoria
@@ -13,11 +16,17 @@ class Producto(SQLModel, table=True):
     # PK
     id: Optional[int] = Field(default=None, primary_key=True)
 
+    # FK
+    unidad_venta_id: Optional[int] = Field(
+        default=None, foreign_key="unidad_medida.id"
+    )
+
     # Atributos
     nombre: str = Field(max_length=150, nullable=False)
     descripcion: Optional[str] = Field(default=None)
     precio_base: float = Field(nullable=False, ge=0)
-    imagenes_url: Optional[str] = Field(default=None)  # JSON string con lista de URLs
+    imagenes_url: Optional[str] = Field(default=None, sa_column=Column(ARRAY(TEXT), nullable=True)
+    )
     stock_cantidad: int = Field(default=0, nullable=False, ge=0)
     disponible: bool = Field(default=True, nullable=False)
 
@@ -29,5 +38,5 @@ class Producto(SQLModel, table=True):
     # Relaciones
     categorias_link: List["ProductoCategoria"] = Relationship(back_populates="producto")
     ingredientes_link: List["ProductoIngrediente"] = Relationship(back_populates="producto")
-
+    unidad_venta: Optional["UnidadMedida"] = Relationship(back_populates="productos")
     detalles_pedido: List["DetallePedido"] = Relationship(back_populates="producto")

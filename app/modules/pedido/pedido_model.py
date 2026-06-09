@@ -2,12 +2,15 @@ from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship
 
+
+
 if TYPE_CHECKING:
     from app.modules.detalle_pedido.detalle_pedido_model import DetallePedido
     from app.modules.forma_pago.forma_pago_model import FormaPago
     from app.modules.estado_pedido.estado_pedido_model import EstadoPedido
     from app.modules.usuario.usuario_model import Usuario
     from app.modules.direccion_entrega.direccion_entrega_model import DireccionEntrega
+    from app.modules.pago.pago_model import Pago
 
 
 class Pedido(SQLModel, table=True):
@@ -28,7 +31,7 @@ class Pedido(SQLModel, table=True):
         max_length=20, foreign_key="forma_pago.codigo", nullable=False
     )
 
-    # Snapshot monetario inmutable desde creación
+    # Snapshot monetario
     subtotal: float = Field(nullable=False)
     descuento: float = Field(default=0.00)
     costo_envio: float = Field(default=50.00)
@@ -49,3 +52,5 @@ class Pedido(SQLModel, table=True):
 
     usuario: Optional["Usuario"] = Relationship(back_populates="pedidos")
     direccion: Optional["DireccionEntrega"] = Relationship(back_populates="pedidos")
+
+    pago: Optional["Pago"] = Relationship(back_populates="pedido")

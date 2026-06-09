@@ -15,6 +15,7 @@ class Ingrediente(SQLModel, table=True):
     # Atributos
     nombre: str = Field(max_length=100, unique=True, nullable=False)
     descripcion: Optional[str] = Field(default=None)
+    stock_cantidad: int = Field(default=0, nullable=False, ge=0)
     es_alergeno: bool = Field(default=False, nullable=False)
 
     # Audit
