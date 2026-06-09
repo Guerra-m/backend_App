@@ -33,7 +33,6 @@ def vincular(
                                response_model=list[ProductoCategoriaRead])
 def por_producto(
     producto_id: int,
-    _user: Annotated[UsuarioAuth, Depends(get_current_active_user)],
     service: ProductoCategoriaService = Depends(get_service)
 ):
     return service.listar_por_producto(producto_id)
@@ -42,7 +41,6 @@ def por_producto(
 @producto_categoria_router.get("/categoria/{categoria_id}", response_model=list[ProductoCategoriaRead])
 def por_categoria(
     categoria_id: int,
-    _user: Annotated[UsuarioAuth, Depends(get_current_active_user)],
     service: ProductoCategoriaService = Depends(get_service)
 ):
     return service.listar_por_categoria(categoria_id)
