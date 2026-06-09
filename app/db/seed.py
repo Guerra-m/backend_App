@@ -75,6 +75,36 @@ USUARIOS = [
         "password": "Juan1234!",
         "roles": ["CLIENT"],
     },
+    {
+        "nombre": "Maria",
+        "apellido": "Stock",
+        "email": "stock@example.com",
+        "password": "Stock1234!",
+        "roles": ["STOCK"],
+    },
+    {
+        "nombre": "Pedro",
+        "apellido": "Pedidos",
+        "email": "pedidos@example.com",
+        "password": "Pedidos1234!",
+        "roles": ["PEDIDOS"],
+    },
+]
+
+
+PRODUCTOS = [
+    {
+        "nombre": "Hamburguesa Clásica",
+        "descripcion": "Carne, queso, lechuga y tomate",
+        "precio": 5000,
+        "imagen": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
+    },
+    {
+        "nombre": "Pizza Napolitana",
+        "descripcion": "Mozzarella y albahaca",
+        "precio": 7000,
+        "imagen": "https://images.unsplash.com/photo-1601924582970-9238bcb495d9",
+    },
 ]
 
 
@@ -117,46 +147,52 @@ def run() -> None:
 
         session.commit()
 
-        print("\nUnidades de Medida:")
-        for data in UNIDADES_MEDIDA:
-            from sqlmodel import select
-            existing = session.exec(
-                select(UnidadMedida).where(UnidadMedida.simbolo == data["simbolo"])
-            ).first()
-            if existing:
-                print(f"  [=] Ya existe: {data['simbolo']}")
-            else:
-                session.add(UnidadMedida(**data))
-                print(f"  [+] Creado: {data['nombre']} ({data['simbolo']})")
-                
-        session.commit()
 
+        # ───────── USUARIOS ─────────
         print("\nUsuarios:")
-        for data in USUARIOS:
+        for u in USUARIOS:
             existing = session.exec(
-                select(Usuario).where(Usuario.email == data["email"])
+                select(Usuario).where(Usuario.email == u["email"])
             ).first()
 
-            if existing:
-                print(f"  [=] Ya existe: {data['email']}")
-            else:
-                usuario = Usuario(
-                    nombre=data["nombre"],
-                    apellido=data["apellido"],
-                    email=data["email"],
-                    password_hash=hash_password(data["password"]),
+            if not existing:
+                user = Usuario(
+                    nombre=u["nombre"],
+                    apellido=u["apellido"],
+                    email=u["email"],
+                    password_hash=hash_password(u["password"]),
                 )
-                session.add(usuario)
+                session.add(user)
                 session.flush()
 
-                for rol_codigo in data["roles"]:
+                for role in u["roles"]:
                     session.add(UsuarioRol(
-                        usuario_id=usuario.id,
-                        rol_codigo=rol_codigo,
+                        usuario_id=user.id,
+                        rol_codigo=role,
                     ))
-                print(f"  [+] Creado: {data['email']} / {data['password']}  roles={data['roles']}")
+
+                print(f"  [+] {u['email']}")
+            else:
+                print(f"  [=] {u['email']}")
 
         session.commit()
+
+        # ───────── PRODUCTOS ─────────
+        print("\nProductos:")
+        for p in PRODUCTOS:
+            existing = session.exec(
+                select(Producto).where(Producto.nombre == p["nombre"])
+            ).first()
+
+            if not existing:
+                session.add(Producto(**p))
+                print(f"  [+] {p['nombre']}")
+            else:
+                print(f"  [=] {p['nombre']}")
+
+        session.commit()
+
+    print("\n✔ SEED COMPLETADO")
 
     print("\n--- Usuarios para pruebas ---")
     print("  admin@example.com / Admin1234!  → ADMIN")
