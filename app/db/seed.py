@@ -92,22 +92,6 @@ USUARIOS = [
 ]
 
 
-PRODUCTOS = [
-    {
-        "nombre": "Hamburguesa Clásica",
-        "descripcion": "Carne, queso, lechuga y tomate",
-        "precio": 5000,
-        "imagen": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd",
-    },
-    {
-        "nombre": "Pizza Napolitana",
-        "descripcion": "Mozzarella y albahaca",
-        "precio": 7000,
-        "imagen": "https://images.unsplash.com/photo-1601924582970-9238bcb495d9",
-    },
-]
-
-
 # Runner -----------
 
 def run() -> None:
