@@ -7,19 +7,21 @@ class IngredienteCreate(BaseModel):
     nombre: str
     descripcion: Optional[str] = None
     es_alergeno: bool = False
+    stock_cantidad: int = 0
 
 
 class IngredienteUpdate(BaseModel):
     nombre: Optional[str] = None
     descripcion: Optional[str] = None
     es_alergeno: Optional[bool] = None
-
+    stock_cantidad: Optional[int] = None
 
 class IngredienteRead(BaseModel):
     id: int
     nombre: str
     descripcion: Optional[str]
     es_alergeno: bool
+    stock_cantidad: int
     created_at: datetime
     updated_at: datetime
 

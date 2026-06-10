@@ -75,7 +75,7 @@ USUARIOS = [
         "password": "Juan1234!",
         "roles": ["CLIENT"],
     },
-]
+] 
 
 
 # Runner -----------
