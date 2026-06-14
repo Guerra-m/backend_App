@@ -13,11 +13,13 @@ from app.modules.usuario_rol.usuario_rol_model import UsuarioRol
 from app.modules.direccion_entrega.direccion_entrega_model import DireccionEntrega
 from app.modules.refresh_token.refresh_token_model import RefreshToken
 
+from app.modules.unidad_medida.unidad_medida_model import UnidadMedida  
 from app.modules.forma_pago.forma_pago_model import FormaPago
 from app.modules.estado_pedido.estado_pedido_model import EstadoPedido
 from app.modules.pedido.pedido_model import Pedido
 from app.modules.detalle_pedido.detalle_pedido_model import DetallePedido
 from app.modules.historial_estado_pedido.historial_estado_pedido_model import HistorialEstadoPedido
+from app.modules.pago.pago_model import Pago
 
 from app.modules.categoria.categoria_model import Categoria
 from app.modules.ingrediente.ingrediente_model import Ingrediente
@@ -38,7 +40,8 @@ from app.modules.producto_ingrediente.producto_ingrediente_router import product
 from app.modules.forma_pago.forma_pago_router import forma_pago_router
 from app.modules.estado_pedido.estado_pedido_router import estado_pedido_router
 from app.modules.pedido.pedido_router import pedido_router
-
+from app.modules.unidad_medida.unidad_medida_router import unidad_medida_router
+from app.modules.pago.pago_router import pago_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -47,12 +50,12 @@ async def lifespan(app: FastAPI):
     print("aplicacion finalizada")
 
 app = FastAPI(
-    title="Segundo parcial",
+    title="TPI Programacion 4",
     version="1.0.0",
     description=(
-        "Proyecto para el parcial 2 de programacion 4\n\n" \
-        "Gomez Cristian \n\n"
-        "Guerra Martin"
+        "Proyecto para el TPI de programacion 4\n\n" \
+        "Guerra Martin \n\n"
+        "Gomez Cristian"
     ),
     lifespan=lifespan,)
 # CORS ---------------------
@@ -77,11 +80,14 @@ app.include_router(ingrediente_router)
 app.include_router(producto_router)
 app.include_router(producto_categoria_router)
 app.include_router(producto_ingrediente_router)
-app.include_router(forma_pago_router)
-app.include_router(estado_pedido_router)
+app.include_router(unidad_medida_router)
 
 # Ventas
 app.include_router(pedido_router)
+app.include_router(pago_router)
+app.include_router(forma_pago_router)
+app.include_router(estado_pedido_router)
+app
 
 
 # ─── Health check ─────────────────────────────────────────────────────────────

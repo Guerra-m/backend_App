@@ -51,3 +51,12 @@ class IngredienteService:
             except ValueError as e:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
             return {"mensaje": f"Ingrediente {ingrediente_id} eliminado correctamente"}
+
+    def actualizar_stock(self, ingrediente_id: int, stock_cantidad: int) -> IngredienteRead:
+        #PATCH /ingredientes/{id}/stock — ADMIN y STOCK
+        with self.uow as uow:
+            try:
+                ingrediente = uow.ingredientes.actualizar_stock(ingrediente_id, stock_cantidad)
+            except ValueError as e:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+            return IngredienteRead.model_validate(ingrediente)

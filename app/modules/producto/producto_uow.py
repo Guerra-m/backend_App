@@ -3,6 +3,7 @@ from app.core.database import engine
 from app.modules.producto.producto_repository import ProductoRepository
 from app.modules.producto_categoria.producto_categoria_repository import ProductoCategoriaRepository
 from app.modules.producto_ingrediente.producto_ingrediente_repository import ProductoIngredienteRepository
+from app.modules.unidad_medida.unidad_medida_repository import UnidadMedidaRepository
 
 
 class ProductoUnitOfWork:
@@ -16,6 +17,7 @@ class ProductoUnitOfWork:
         self.productos = ProductoRepository(self.session)
         self.producto_categorias = ProductoCategoriaRepository(self.session)
         self.producto_ingredientes = ProductoIngredienteRepository(self.session)
+        self.unidades = UnidadMedidaRepository(self.session)
         return self
 
     def __exit__(self, exc_type, *args):
