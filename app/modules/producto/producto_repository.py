@@ -12,7 +12,11 @@ class ProductoRepository(BaseRepository[Producto]):
         super().__init__(Producto, session)
 
     def create(self, data: ProductoCreate) -> Producto:
-        producto = Producto(**data.model_dump())
+        dump = data.model_dump()
+        imagenes = dump.pop("imagenes_url", None)
+        producto = Producto(**dump)
+        if imagenes:
+            producto.imagenes_url = imagenes
         self.session.add(producto)
         self.session.flush()
         return producto
@@ -88,8 +92,11 @@ class ProductoRepository(BaseRepository[Producto]):
     def update(self, producto_id: int, data: ProductoUpdate) -> Producto:
         producto = self.get_by_id(producto_id)
         update_data = data.model_dump(exclude_unset=True)
+        imagenes = update_data.pop("imagenes_url", None)
         for key, value in update_data.items():
             setattr(producto, key, value)
+        if imagenes is not None:
+            producto.imagenes_url = imagenes
         producto.updated_at = datetime.now(timezone.utc)
         self.session.add(producto)
         self.session.flush()

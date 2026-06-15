@@ -59,6 +59,26 @@ class ProductoRead(BaseModel):
 
     model_config = {"from_attributes": True}
 
+    @field_validator("imagenes_url", mode="before")
+    @classmethod
+    def parse_imagenes_url(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, list):
+            # Filtrar cualquier elemento que no sea string válido (caracteres sueltos, etc.)
+            strings = [s for s in v if isinstance(s, str) and len(s) > 3]
+            return strings if strings else None
+        if isinstance(v, str):
+            s = v.strip()
+            if not s or s in ("{}", "{}"):
+                return None
+            # Formato crudo PostgreSQL: {"url1","url2"}
+            if s.startswith("{") and s.endswith("}"):
+                content = s[1:-1]
+                return [item.strip('"') for item in content.split(",") if item.strip()]
+            return [s]
+        return v
+
 
 class ProductoReadDetalle(ProductoRead):
     #Para mostrar producto con sus categorías e ingredientes para respuestas completas
