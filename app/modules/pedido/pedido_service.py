@@ -153,7 +153,15 @@ class PedidoService:
             historial = uow.historial.get_by_pedido(pedido_id)
 
             result = PedidoReadDetalle.model_validate(pedido)
-            result.detalles = [DetallePedidoRead.model_validate(d) for d in detalles]
+
+            detalles_read = []
+            for d in detalles:
+                dr = DetallePedidoRead.model_validate(d)
+                if d.producto and isinstance(d.producto.imagenes_url, list) and d.producto.imagenes_url:
+                    dr.imagen_snapshot = d.producto.imagenes_url[0]
+                detalles_read.append(dr)
+            result.detalles = detalles_read
+
             result.historial = [HistorialEstadoPedidoRead.model_validate(h) for h in historial]
             return result
 

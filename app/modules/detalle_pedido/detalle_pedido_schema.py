@@ -19,6 +19,7 @@ class DetallePedidoRead(BaseModel):
     subtotal_snap: float
     personalizacion: Optional[list[int]] = []
     created_at: datetime
+    imagen_snapshot: Optional[str] = None
 
     model_config = {"from_attributes": True}
 
