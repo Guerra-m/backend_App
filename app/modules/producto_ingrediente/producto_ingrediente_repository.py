@@ -24,13 +24,13 @@ class ProductoIngredienteRepository:
         statement = select(ProductoIngrediente).where(
             ProductoIngrediente.producto_id == producto_id
         )
-        return self.session.exec(statement).all()
+        return list(self.session.exec(statement).all())
 
     def get_by_ingrediente(self, ingrediente_id: int) -> list[ProductoIngrediente]:
         statement = select(ProductoIngrediente).where(
             ProductoIngrediente.ingrediente_id == ingrediente_id
         )
-        return self.session.exec(statement).all()
+        return list(self.session.exec(statement).all())
 
     def delete(self, producto_id: int, ingrediente_id: int) -> None:
         link = self.session.get(ProductoIngrediente, (producto_id, ingrediente_id))

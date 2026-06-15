@@ -34,7 +34,7 @@ class ProductoRepository(BaseRepository[Producto]):
             .offset(offset)
             .limit(limit)
         )
-        return self.session.exec(statement).all()
+        return list(self.session.exec(statement).all())
     
     def get_all_filtrado(
         self,
@@ -83,7 +83,7 @@ class ProductoRepository(BaseRepository[Producto]):
             .offset(offset)
             .limit(limit)
         )
-        return self.session.exec(statement).all()
+        return list(self.session.exec(statement).all())
 
     def update(self, producto_id: int, data: ProductoUpdate) -> Producto:
         producto = self.get_by_id(producto_id)
@@ -111,6 +111,15 @@ class ProductoRepository(BaseRepository[Producto]):
     def soft_delete(self, producto_id: int) -> Producto:
         producto = self.get_by_id(producto_id)
         producto.deleted_at = datetime.now(timezone.utc)
+        self.session.add(producto)
+        self.session.flush()
+        return producto
+
+    def actualizar_imagenes(self, producto_id: int, imagenes_url: list[str]) -> Producto:
+        #PATCH /imagenes — reemplaza el array completo de URLs Cloudinary
+        producto = self.get_by_id(producto_id)
+        producto.imagenes_url = imagenes_url
+        producto.updated_at = datetime.now(timezone.utc)
         self.session.add(producto)
         self.session.flush()
         return producto

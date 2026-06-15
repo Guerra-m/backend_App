@@ -1,10 +1,13 @@
 from typing import Annotated, Optional
 from fastapi import APIRouter, Query, status, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.modules.producto.producto_service import ProductoService
 from app.modules.producto.producto_uow import ProductoUnitOfWork
-from app.modules.producto.producto_schema import ProductoCreate, ProductoReadConRelaciones, ProductoUpdate, ProductoRead
+from app.modules.producto.producto_schema import (
+    ProductoCreate, ProductoReadConRelaciones, ProductoUpdate, ProductoRead,
+    ImagenProductoUpdate)
+
 from app.core.deps import get_current_active_user, require_role
 from app.modules.usuario.usuario_schema import UsuarioAuth
 
@@ -20,6 +23,11 @@ def get_producto_service() -> ProductoService:
 class DisponibilidadUpdate(BaseModel):
     disponible: bool
     stock_cantidad: Optional[int] = None
+
+class AgregarIngredienteRequest(BaseModel):
+    cantidad: float = Field(gt=0, description="Cantidad del ingrediente en el producto")
+    unidad_medida_id: int = Field(description="ID de la unidad de medida")
+    es_removible: bool = False
 
 
 # GET ────────────────────────────────────────────────────────────────────
@@ -84,6 +92,7 @@ def actualizar_producto(
     service: ProductoService = Depends(get_producto_service)
 ):
     return service.actualizar_producto(producto_id, data)
+
 
 
 # DELETE ─────────────────────────────────────────────────────────────────
@@ -158,10 +167,12 @@ def quitar_categoria(
 def agregar_ingrediente(
     producto_id: int,
     ingrediente_id: int,
-    es_removible: Annotated[bool, Query(description="¿Puede el cliente quitar este ingrediente?")] = False,
+    data: AgregarIngredienteRequest,
     service: ProductoService = Depends(get_producto_service)
 ):
-    return service.agregar_ingrediente(producto_id, ingrediente_id, es_removible)
+    return service.agregar_ingrediente(
+        producto_id, ingrediente_id, 
+        data.cantidad, data.unidad_medida_id,data.es_removible)
 
 
 @producto_router.delete(
@@ -175,3 +186,20 @@ def quitar_ingrediente(
     service: ProductoService = Depends(get_producto_service)
 ):
     return service.quitar_ingrediente(producto_id, ingrediente_id)
+
+
+# PATCH imagenes 
+ 
+@producto_router.patch(
+    "/{producto_id}/imagenes",
+    response_model=ProductoRead,
+    dependencies=[Depends(require_role(["ADMIN"]))],
+)
+def actualizar_imagenes(
+    producto_id: int,
+    data: ImagenProductoUpdate,
+    service: ProductoService = Depends(get_producto_service),
+):
+    """Reemplaza el array completo de imágenes Cloudinary del producto."""
+    return service.actualizar_imagenes(producto_id, data)
+ 

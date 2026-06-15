@@ -1,5 +1,6 @@
 from typing import Annotated
 from fastapi import APIRouter, Query, status, Depends
+from pydantic import BaseModel
 from app.modules.ingrediente.ingrediente_service import IngredienteService
 from app.modules.ingrediente.ingrediente_uow import IngredienteUnitOfWork
 from app.modules.ingrediente.ingrediente_schema import (
@@ -15,6 +16,8 @@ ingrediente_router = APIRouter(prefix="/api/v1/ingredientes", tags=["Ingrediente
 def get_ingrediente_service() -> IngredienteService:
     return IngredienteService(IngredienteUnitOfWork())
 
+class StockUpdate(BaseModel):
+    stock_cantidad: int
 
 # GET ────────────────────────────────────────────────────────────────────
 
@@ -76,3 +79,19 @@ def eliminar_ingrediente(
     service: IngredienteService = Depends(get_ingrediente_service)
 ):
     return service.eliminar_ingrediente(ingrediente_id)
+
+# PATCH stock ────────────────────────────────────────────────────────────
+ 
+@ingrediente_router.patch(
+    "/{ingrediente_id}/stock",
+    response_model=IngredienteRead,
+    dependencies=[Depends(require_role(["ADMIN", "STOCK"]))],
+)
+def actualizar_stock(
+    ingrediente_id: int,
+    data: StockUpdate,
+    service: IngredienteService = Depends(get_ingrediente_service),
+):
+    #Actualiza el stock de un ingrediente. ADMIN y STOCK.
+    return service.actualizar_stock(ingrediente_id, data.stock_cantidad)
+ 
