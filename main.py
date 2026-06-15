@@ -42,6 +42,7 @@ from app.modules.estado_pedido.estado_pedido_router import estado_pedido_router
 from app.modules.pedido.pedido_router import pedido_router
 from app.modules.unidad_medida.unidad_medida_router import unidad_medida_router
 from app.modules.pago.pago_router import pago_router
+from app.modules.pedido.pedido_ws_router import pedido_ws_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -84,6 +85,7 @@ app.include_router(unidad_medida_router)
 
 # Ventas
 app.include_router(pedido_router)
+app.include_router(pedido_ws_router)
 app.include_router(pago_router)
 app.include_router(forma_pago_router)
 app.include_router(estado_pedido_router)
