@@ -2,6 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, status
 
 from app.core.deps import get_current_active_user, require_role
+from app.core.ws_manager import manager
 from app.modules.usuario.usuario_schema import UsuarioAuth
 from app.modules.pedido.pedido_schema import (
     PedidoCreate, PedidoRead, PedidoReadDetalle, AvanzarEstadoRequest
@@ -46,7 +47,7 @@ def obtener_pedido(
 
 
 @pedido_router.post("/{pedido_id}/avanzar", response_model=PedidoRead)
-def avanzar_estado(
+async def avanzar_estado(
     pedido_id: int,
     body: AvanzarEstadoRequest,
     current_user: Annotated[UsuarioAuth, Depends(get_current_active_user)],
@@ -57,7 +58,18 @@ def avanzar_estado(
     CLIENT: solo puede cancelar desde PENDIENTE o CONFIRMADO.
     ADMIN/PEDIDOS: pueden avanzar cualquier transición válida.
     """
-    return service.avanzar_estado(pedido_id, body.estado_hacia, current_user, body.motivo)
+    result = service.avanzar_estado(pedido_id, body.estado_hacia, current_user, body.motivo)
+
+    ws_message = {
+        "type": "estado_actualizado",
+        "pedido_id": pedido_id,
+        "estado_hacia": body.estado_hacia,
+        "updated_at": result.updated_at.isoformat(),
+    }
+    await manager.broadcast_all(ws_message)
+    await manager.broadcast_pedido(pedido_id, ws_message)
+
+    return result
 
 
 @pedido_router.get("/{pedido_id}/historial", response_model=list[HistorialEstadoPedidoRead])
