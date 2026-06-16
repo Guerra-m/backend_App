@@ -15,7 +15,8 @@ from app.modules.usuario.usuario_schema import UsuarioAuth
 FSM_TRANSITIONS: dict[str, list[str]] = {
     "PENDIENTE":  ["CONFIRMADO", "CANCELADO"],
     "CONFIRMADO": ["EN_PREP", "CANCELADO"],
-    "EN_PREP":    ["EN_CAMINO", "CANCELADO"],
+    "EN_PREP":    ["ENTREGADO", "CANCELADO"],
+    "EN_CAMINO":  ["ENTREGADO", "CANCELADO"],
     "ENTREGADO":  [],
     "CANCELADO":  [],
 }
