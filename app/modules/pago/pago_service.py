@@ -83,7 +83,7 @@ class PagoService:
         "failure": f"{settings.mp_ngrok_url}/pago/fallo",
         "pending": f"{settings.mp_ngrok_url}/pago/pendiente",
     },
-    "auto_return": "approved",
+    # "auto_return": "approved",
 }
         response = sdk.preference().create(preference_data)
 
