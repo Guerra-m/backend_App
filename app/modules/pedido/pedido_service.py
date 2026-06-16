@@ -55,6 +55,7 @@ class PedidoService:
             # Procesar ítems — capturar snapshots
             subtotal = float("0.00")
             detalles_data = []
+            productos_a_descontar = []  # guardamos para descontar stock al final
 
             for item in data.items:
                 try:
@@ -69,6 +70,11 @@ class PedidoService:
                         status_code=status.HTTP_409_CONFLICT,
                         detail=f"Producto '{producto.nombre}' no disponible",
                     )
+                if producto.stock_cantidad < item.cantidad:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail=f"Stock insuficiente para '{producto.nombre}'. Disponible: {producto.stock_cantidad}",
+                    )
 
                 precio_snap = producto.precio_base
                 subtotal_snap = precio_snap * item.cantidad
@@ -82,6 +88,9 @@ class PedidoService:
                     "subtotal_snap": subtotal_snap,
                     "personalizacion": json.dumps(item.personalizacion) if item.personalizacion else None,
                 })
+
+                # Guardar referencia para descontar stock
+                productos_a_descontar.append((producto, item.cantidad))
 
             # Calcular total
             total = subtotal - data.descuento + data.costo_envio
@@ -109,6 +118,14 @@ class PedidoService:
             for d in detalles_data:
                 detalle = DetallePedido(pedido_id=pedido.id, **d)
                 uow.detalles.add(detalle)
+
+            # Descontar stock al crear el pedido
+            for producto, cantidad in productos_a_descontar:
+                uow.productos.actualizar_disponibilidad(
+                    producto.id,
+                    disponible=producto.disponible,
+                    stock_cantidad=producto.stock_cantidad - cantidad,
+                )
 
             # Registrar en historial (estado_desde=NULL = creación)
             uow.historial.add(HistorialEstadoPedido(
@@ -216,6 +233,22 @@ class PedidoService:
 
             # Aplicar transición
             pedido = uow.pedidos.actualizar_estado(pedido, estado_hacia)
+
+            # ─── Gestión de stock según transición ───────────────────────────
+
+            # Al CANCELAR: restaurar stock de cada producto
+            if estado_hacia == "CANCELADO":
+                detalles = uow.detalles.get_by_pedido(pedido_id)
+                for detalle in detalles:
+                    try:
+                        producto = uow.productos.get_by_id(detalle.producto_id)
+                        uow.productos.actualizar_disponibilidad(
+                            producto.id,
+                            disponible=producto.disponible,
+                            stock_cantidad=producto.stock_cantidad + detalle.cantidad,
+                        )
+                    except Exception:
+                        pass  # Si el producto fue eliminado, no bloqueamos la cancelación
 
             # Registrar en historial (append-only)
             uow.historial.add(HistorialEstadoPedido(
