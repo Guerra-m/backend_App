@@ -16,7 +16,6 @@ FSM_TRANSITIONS: dict[str, list[str]] = {
     "PENDIENTE":  ["CONFIRMADO", "CANCELADO"],
     "CONFIRMADO": ["EN_PREP", "CANCELADO"],
     "EN_PREP":    ["ENTREGADO", "CANCELADO"],
-    "EN_CAMINO":  ["ENTREGADO", "CANCELADO"],
     "ENTREGADO":  [],
     "CANCELADO":  [],
 }
@@ -24,7 +23,7 @@ FSM_TRANSITIONS: dict[str, list[str]] = {
 # Estados desde los que CLIENT puede cancelar
 CLIENT_CANCEL_STATES = ["PENDIENTE", "CONFIRMADO"]
 # Estados desde los que solo ADMIN/PEDIDOS pueden cancelar
-ADMIN_ONLY_CANCEL_FROM = ["EN_PREP", "EN_CAMINO"]
+ADMIN_ONLY_CANCEL_FROM = ["EN_PREP"]
 
 
 class PedidoService:
