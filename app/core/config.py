@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     frontend_url: str = "http://localhost:5173"
     frontend_admin_url: str = "http://localhost:5174" 
 
+
+    # Cloudinary
+    cloudinary_cloud_name: str = ""
+    cloudinary_api_key: str = ""
+    cloudinary_api_secret: str = ""
+    
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",
