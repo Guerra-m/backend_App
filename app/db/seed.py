@@ -28,6 +28,7 @@ from app.modules.producto_ingrediente.producto_ingrediente_model import Producto
 from app.modules.pedido.pedido_model import Pedido
 from app.modules.detalle_pedido.detalle_pedido_model import DetallePedido
 from app.modules.historial_estado_pedido.historial_estado_pedido_model import HistorialEstadoPedido
+from app.modules.pago.pago_model import Pago
 # Datos ------------
 
 ROLES = [
@@ -161,20 +162,6 @@ def run() -> None:
 
         session.commit()
 
-        # ───────── PRODUCTOS ─────────
-        print("\nProductos:")
-        for p in PRODUCTOS:
-            existing = session.exec(
-                select(Producto).where(Producto.nombre == p["nombre"])
-            ).first()
-
-            if not existing:
-                session.add(Producto(**p))
-                print(f"  [+] {p['nombre']}")
-            else:
-                print(f"  [=] {p['nombre']}")
-
-        session.commit()
 
     print("\n✔ SEED COMPLETADO")
 
