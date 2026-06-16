@@ -43,6 +43,8 @@ from app.modules.pedido.pedido_router import pedido_router
 from app.modules.unidad_medida.unidad_medida_router import unidad_medida_router
 from app.modules.pago.pago_router import pago_router
 from app.modules.pedido.pedido_ws_router import pedido_ws_router
+from app.modules.uploads.uploads_router import uploads_router
+from app.modules.estadisticas.estadisticas_router import estadisticas_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -75,6 +77,10 @@ app.include_router(usuario_rol_router)
 app.include_router(rol_router)
 app.include_router(direccion_entrega_router)
 
+
+app.include_router(uploads_router)
+app.include_router(estadisticas_router)
+
 # Catalogo
 app.include_router(categoria_router)
 app.include_router(ingrediente_router)
@@ -89,7 +95,7 @@ app.include_router(pedido_ws_router)
 app.include_router(pago_router)
 app.include_router(forma_pago_router)
 app.include_router(estado_pedido_router)
-app
+
 
 
 # ─── Health check ─────────────────────────────────────────────────────────────
