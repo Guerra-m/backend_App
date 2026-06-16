@@ -1,6 +1,6 @@
 from typing import Optional, List, TYPE_CHECKING
 from datetime import datetime, timezone
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import JSON
 from sqlmodel import Column, SQLModel, Field, Relationship
 
 from app.modules.unidad_medida.unidad_medida_model import UnidadMedida
@@ -25,7 +25,9 @@ class Producto(SQLModel, table=True):
     nombre: str = Field(max_length=150, nullable=False)
     descripcion: Optional[str] = Field(default=None)
     precio_base: float = Field(nullable=False, ge=0)
-    imagenes_url: Optional[List[str]] = Field(default=None, sa_column=Column(JSONB, nullable=True))
+    imagenes_url: Optional[List[str]] = Field(
+        default=None, 
+        sa_column=Column(JSON, default=[]))
     stock_cantidad: int = Field(default=0, nullable=False, ge=0)
     disponible: bool = Field(default=True, nullable=False)
 

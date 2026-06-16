@@ -6,15 +6,30 @@ Fixtures compartidos por toda la suite de tests de FoodStore.
 
 import os
 
-# Cargar .env.test ANTES de cualquier import de la app
+# ============================================================
+# CRITICO: parchear el engine ANTES de importar la app
+# Esto garantiza que todos los modulos usen SQLite en tests
+# ============================================================
+from sqlalchemy.pool import StaticPool
+from sqlmodel import create_engine, Session, SQLModel, select
+
+# Crear el engine de test PRIMERO
+test_engine = create_engine(
+    "sqlite://",
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+    echo=False,
+)
+
+# Monkey-patch: reemplazar el engine de produccion antes de que la app lo use
+import app.core.database as _db_module
+_db_module.engine = test_engine
+
+# Ahora si podemos importar la app y el resto
 from dotenv import load_dotenv
 load_dotenv(".env.test", override=True)
 
-# Forzar environment de test
 os.environ["ENVIRONMENT"] = "test"
-# Apuntar a SQLite en memoria
-os.environ["TEST_DATABASE_URL"] = "sqlite://"
-# Subir rate limit para no interferir con tests funcionales
 os.environ["RATE_LIMIT_DEFAULT_PER_MINUTE"] = "10000"
 os.environ["RATE_LIMIT_DEFAULT_BURST"] = "1000"
 os.environ["RATE_LIMIT_AUTH_PER_MINUTE"] = "10000"
@@ -22,13 +37,11 @@ os.environ["RATE_LIMIT_AUTH_BURST"] = "1000"
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlmodel import Session, SQLModel, create_engine, select
-from sqlalchemy.pool import StaticPool
 
 from app.core.database import get_session
 from app.core.security import hash_password
 from app.core.rate_limit.rate_limit_middleware import RateLimitMiddleware
-from app.main import app
+from main import app
 
 # Importar TODOS los modelos para que SQLModel.metadata los conozca
 from app.modules.rol.rol_model import Rol
@@ -51,36 +64,24 @@ from app.modules.pago.pago_model import Pago
 
 
 # ===========================================================================
-# 1. ENGINE DE TEST
-# ===========================================================================
-@pytest.fixture(name="engine_test", scope="session")
-def engine_test_fixture():
-    engine = create_engine(
-        "sqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-        echo=False,
-    )
-    yield engine
-    engine.dispose()
-
-
-# ===========================================================================
-# 2. SESSION DE BD
+# 1. SESSION DE BD (scope=function → nueva por test)
 # ===========================================================================
 @pytest.fixture(name="session", scope="function")
-def session_fixture(engine_test):
-    SQLModel.metadata.create_all(engine_test)
-    with Session(engine_test) as session:
+def session_fixture():
+    """Session limpia por test. Crea y dropea tablas por cada test."""
+    SQLModel.metadata.create_all(test_engine)
+    with Session(test_engine) as session:
         yield session
-    SQLModel.metadata.drop_all(engine_test)
+    SQLModel.metadata.drop_all(test_engine)
 
 
 # ===========================================================================
-# 3. CLIENTE HTTP
+# 2. CLIENTE HTTP
 # ===========================================================================
 @pytest.fixture(name="client", scope="function")
 def client_fixture(session: Session):
+    """TestClient con DB de test inyectada y lifespan deshabilitado."""
+
     def get_session_override():
         return session
 
@@ -88,13 +89,20 @@ def client_fixture(session: Session):
     _reset_rate_limiters()
     _seed_test_db(session)
 
-    with TestClient(app, raise_server_exceptions=False) as client:
-        yield client
+    # Deshabilitar el lifespan para que no intente conectar a PostgreSQL real
+    original_lifespan = app.router.lifespan_context
+    app.router.lifespan_context = None
 
+    client = TestClient(app, raise_server_exceptions=False)
+    yield client
+
+    # Restaurar estado original
+    app.router.lifespan_context = original_lifespan
     app.dependency_overrides.clear()
 
 
 def _reset_rate_limiters() -> None:
+    """Resetea rate limiters entre tests para no contaminar."""
     try:
         RateLimitMiddleware.reset_all_limiters()
     except Exception:
@@ -102,23 +110,25 @@ def _reset_rate_limiters() -> None:
 
 
 def _seed_test_db(session: Session) -> None:
+    """Crea datos minimos necesarios para los tests."""
+
     # Roles
     for codigo, nombre in [
         ("ADMIN", "Administrador"),
-        ("STOCK", "Gestión de Stock"),
-        ("PEDIDOS", "Gestión de Pedidos"),
+        ("STOCK", "Gestion de Stock"),
+        ("PEDIDOS", "Gestion de Pedidos"),
         ("CLIENT", "Cliente"),
     ]:
         if not session.get(Rol, codigo):
             session.add(Rol(codigo=codigo, nombre=nombre, descripcion=nombre))
 
-    # Estados de pedido
+    # Estados de pedido (FSM v7 — 5 estados)
     estados = [
-        ("PENDIENTE", "Pedido recibido", 1, False),
-        ("CONFIRMADO", "Pago confirmado", 2, False),
-        ("EN_PREP", "En preparacion", 3, False),
-        ("ENTREGADO", "Entregado", 4, True),
-        ("CANCELADO", "Cancelado", 5, True),
+        ("PENDIENTE",  "Pedido recibido",  1, False),
+        ("CONFIRMADO", "Pago confirmado",  2, False),
+        ("EN_PREP",    "En preparacion",   3, False),
+        ("ENTREGADO",  "Entregado",        4, True),
+        ("CANCELADO",  "Cancelado",        5, True),
     ]
     for codigo, desc, orden, terminal in estados:
         if not session.get(EstadoPedido, codigo):
@@ -129,8 +139,8 @@ def _seed_test_db(session: Session) -> None:
 
     # Formas de pago
     for codigo, desc in [
-        ("MERCADOPAGO", "MercadoPago"),
-        ("EFECTIVO", "Efectivo"),
+        ("MERCADOPAGO",   "MercadoPago"),
+        ("EFECTIVO",      "Efectivo"),
         ("TRANSFERENCIA", "Transferencia"),
     ]:
         if not session.get(FormaPago, codigo):
@@ -138,7 +148,7 @@ def _seed_test_db(session: Session) -> None:
 
     # Unidades de medida
     for nombre, simbolo, tipo in [
-        ("unidad", "ud", "contable"),
+        ("unidad",    "ud", "contable"),
         ("kilogramo", "kg", "peso"),
     ]:
         existing = session.exec(
@@ -168,11 +178,12 @@ def _seed_test_db(session: Session) -> None:
 
 
 # ===========================================================================
-# 4. FIXTURES DE DATOS
+# 3. FIXTURES DE DATOS
 # ===========================================================================
 
 @pytest.fixture(name="normal_user")
 def normal_user_fixture(client: TestClient) -> dict:
+    """Crea un usuario CLIENT via API."""
     response = client.post("/api/v1/auth/register", json={
         "nombre": "Cliente",
         "apellido": "Test",
@@ -185,6 +196,7 @@ def normal_user_fixture(client: TestClient) -> dict:
 
 @pytest.fixture(name="producto_payload")
 def producto_payload_fixture() -> dict:
+    """Payload valido para crear un producto."""
     return {
         "nombre": "Hamburguesa Test",
         "descripcion": "Producto de prueba",
@@ -195,7 +207,10 @@ def producto_payload_fixture() -> dict:
 
 
 @pytest.fixture(name="created_producto")
-def created_producto_fixture(client: TestClient, admin_headers: dict, producto_payload: dict) -> dict:
+def created_producto_fixture(
+    client: TestClient, admin_headers: dict, producto_payload: dict
+) -> dict:
+    """Crea un producto via API y lo devuelve."""
     response = client.post(
         "/api/v1/productos/", json=producto_payload, headers=admin_headers
     )
@@ -204,7 +219,10 @@ def created_producto_fixture(client: TestClient, admin_headers: dict, producto_p
 
 
 @pytest.fixture(name="created_pedido")
-def created_pedido_fixture(client: TestClient, user_headers: dict, created_producto: dict) -> dict:
+def created_pedido_fixture(
+    client: TestClient, user_headers: dict, created_producto: dict
+) -> dict:
+    """Crea un pedido en estado PENDIENTE y lo devuelve."""
     response = client.post(
         "/api/v1/pedidos/",
         json={
@@ -224,10 +242,11 @@ def created_pedido_fixture(client: TestClient, user_headers: dict, created_produ
 
 
 # ===========================================================================
-# 5. HELPERS DE AUTENTICACION
+# 4. HELPERS DE AUTENTICACION
 # ===========================================================================
 
 def _login(client: TestClient, email: str, password: str) -> dict:
+    """Helper: hace login y devuelve headers con la cookie."""
     response = client.post(
         "/api/v1/auth/token",
         data={"username": email, "password": password},
@@ -244,9 +263,11 @@ def _login(client: TestClient, email: str, password: str) -> dict:
 
 @pytest.fixture(name="admin_headers")
 def admin_headers_fixture(client: TestClient) -> dict:
+    """Headers de autenticacion del admin."""
     return _login(client, "admin@foodstore.com", "Admin1234!")
 
 
 @pytest.fixture(name="user_headers")
 def user_headers_fixture(client: TestClient, normal_user: dict) -> dict:
+    """Headers de autenticacion de un usuario CLIENT."""
     return _login(client, normal_user["email"], "Cliente1234!")
