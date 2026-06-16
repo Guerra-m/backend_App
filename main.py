@@ -1,5 +1,3 @@
-
-
 from fastapi import FastAPI
 from app.core.database import create_db_and_tables
 from contextlib import asynccontextmanager
@@ -37,14 +35,24 @@ from app.modules.ingrediente.ingrediente_router import ingrediente_router
 from app.modules.producto.producto_router import producto_router
 from app.modules.producto_categoria.producto_categoria_router import producto_categoria_router
 from app.modules.producto_ingrediente.producto_ingrediente_router import producto_ingrediente_router
+
 from app.modules.forma_pago.forma_pago_router import forma_pago_router
 from app.modules.estado_pedido.estado_pedido_router import estado_pedido_router
 from app.modules.pedido.pedido_router import pedido_router
 from app.modules.unidad_medida.unidad_medida_router import unidad_medida_router
 from app.modules.pago.pago_router import pago_router
 from app.modules.pedido.pedido_ws_router import pedido_ws_router
+
 from app.modules.uploads.uploads_router import uploads_router
 from app.modules.estadisticas.estadisticas_router import estadisticas_router
+
+# Middlewares 
+from app.core.middleware.logging_middleware import LoggingMiddleware
+from app.core.middleware.timing_middleware import TimingMiddleware
+from app.core.rate_limit.rate_limit_middleware import RateLimitMiddleware
+ 
+# Exception Handlers
+from app.core.exceptions.exception_handlers import register_exception_handlers
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -56,12 +64,23 @@ app = FastAPI(
     title="TPI Programacion 4",
     version="1.0.0",
     description=(
-        "Proyecto para el TPI de programacion 4\n\n" \
+        "Proyecto para el TPI de programacion 4 - FoodStore\n\n" \
         "Guerra Martin \n\n"
         "Gomez Cristian"
     ),
     lifespan=lifespan,)
-# CORS ---------------------
+
+
+# Middlewares 
+# Orden: se ejecutan en orden para request, en orden INVERSO para response.
+
+# Rate limit: corta requests abusivas antes de gastar trabajo
+app.add_middleware(RateLimitMiddleware)
+# Logging: registra cada request con duración y request_id
+app.add_middleware(LoggingMiddleware)
+# Timing: mide duración y agrega Server-Timing header
+app.add_middleware(TimingMiddleware)
+# CORS: último para que sus headers lleguen a TODAS las responses
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", 
@@ -71,15 +90,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ─── Exception Handlers ──────────────────────────────────────────────────────
+register_exception_handlers(app)
+
+
 # ─── Routers: Identidad & Acceso ─────────────────────────────────────────────
 app.include_router(usuario_router)
 app.include_router(usuario_rol_router)
 app.include_router(rol_router)
 app.include_router(direccion_entrega_router)
-
-
-app.include_router(uploads_router)
-app.include_router(estadisticas_router)
 
 # Catalogo
 app.include_router(categoria_router)
@@ -95,6 +114,12 @@ app.include_router(pedido_ws_router)
 app.include_router(pago_router)
 app.include_router(forma_pago_router)
 app.include_router(estado_pedido_router)
+
+# Uploads y estadisticas
+app.include_router(uploads_router)
+app.include_router(estadisticas_router)
+
+
 
 
 
