@@ -14,7 +14,8 @@ Ejecutar seed
 - python -m app.db.seed
 
 video: https://www.youtube.com/watch?v=2V3IXbaUrUI
-TPI FINAL(video): https://drive.google.com/file/d/11HS2MXtPQiXUwIMKILImBu_3bKHzWi90/view?usp=sharing
+
+TPI FINAL(video): https://drive.google.com/file/d/1W5GQxVlU_8ERmUSjPJ0acPXpBJGVAHbh/view?usp=sharing
 ----------
 - Descargarse ngrok https://ngrok.com/download/windows
 - Logearse y copiar Access token y ejecutar en consola: 
